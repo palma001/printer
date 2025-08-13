@@ -11,22 +11,24 @@ import 'package:qr/qr.dart';
   var doc_qr = {
     "ver": 1,
     "fecha": data["date"] ?? DateFormat("yyyy-MM-dd").format(DateTime.now()),
-    "cuit": int.parse(company_session["document_number"]),
+    "cuit": int.parse("${company_session["document_number"] ?? "0"}"),
     "ptoVta": fields["point_of_sale"],
-    "tipoCmp": fields["voucher_type"]["Id"],
+    "tipoCmp": fields["voucher_type"]?["Id"] ?? "",
     "nroCmp": fields["cbte_hasta"],
-    "importe": double.parse(data["total"]),
+    "importe": double.parse("${data["total"] ?? "0.0"}"),
     "moneda": "PES",
-    "tipoDocRec": data["client"]["document_type"]["Id"],
-    "nroDocRec": int.parse(data["client"]["document_number"]),
+    "tipoDocRec": data["client"]?["document_type"]?["Id"] ?? "",
+    "nroDocRec": int.parse("${data["client"]?["document_number"] ?? "0"}"),
     "tipoCodAut": "E",
     "ctz": 1,
-    "codAut": int.parse(fields["cae"]),
+    "codAut": int.parse("${fields["cae"] ?? "0"}"),
   };
-  var encoded = base64.encode(utf8.encode(json.encode(doc_qr)));
+  var encoded = base64.encode(
+    utf8.encode(json.encode(doc_qr).replaceAll(" ", "").replaceAll("\n", "")),
+  );
   var url =
       "https://servicioscf.afip.gob.ar/publico/comprobantes/cae.aspx?p=$encoded";
-  return (QrImage(QrCode(4, QrErrorCorrectLevel.L)..addData(url)), url);
+  return (QrImage(QrCode(40, QrErrorCorrectLevel.L)..addData(url)), url);
 }
 
 (List<String>, QrImage, String) generateTicketText(dynamic data) {
@@ -34,14 +36,14 @@ import 'package:qr/qr.dart';
   var sep = "-" * 32;
   var qr_image = null;
   var qr_string = null;
-  var company = data["company"] ?? {};
+  Map<String, dynamic> company = data["company"] ?? {};
   Map<String, Map> fields = data["electronic_invoice"]?["fields"] ?? {};
 
   // Encabezado
   lines.add("RAZON SOCIAL: ${company["name"]?.toString().toUpperCase()}");
-  lines.add("${data["client"]?["name"]}");
-  lines.add("DIRECCION: ${company["address"]}");
-  lines.add("C.U.I.T.: ${company["document_number"]}");
+  lines.add("${data["client"]?["name"] ?? ""}");
+  lines.add("DIRECCION: ${company["address"] ?? ""}");
+  lines.add("C.U.I.T.: ${company["document_number"] ?? ""}");
   if (data["billing"] != null) {
     lines.add("IIBB: ${fields["income_brut"] ?? "----"}");
     lines.add("INICIO ACT: ${fields["activity_start_date"] ?? "----"}");
@@ -81,10 +83,10 @@ import 'package:qr/qr.dart';
   lines.add(sep);
 
   for (var prod in data["products"] ?? []) {
-    var cantidad = double.parse(prod["pivot"]["amount"]);
-    var precio = double.parse(prod["pivot"]["price"]);
+    var cantidad = double.parse("${prod["pivot"]?["amount"] ?? "0.0"}");
+    var precio = double.parse("${prod["pivot"]?["price"] ?? "0.0"}");
     var subtotal = cantidad * precio;
-    var tax = prod["pivot"]["taxe"];
+    var tax = double.parse("${prod["pivot"]?["taxe"] ?? "0.0"}");
 
     lines.add(
       "${cantidad.toStringAsFixed(2)} x ${precio.toStringAsFixed(2)}"
@@ -98,7 +100,9 @@ import 'package:qr/qr.dart';
   }
 
   lines.add(sep);
-  lines.add("TOTAL: ${double.parse(data['total']).toStringAsFixed(2)}");
+  lines.add(
+    "TOTAL: ${double.parse("${data['total'] ?? "0.0"}").toStringAsFixed(2)}",
+  );
   lines.add(sep);
 
   // CAE y Vto

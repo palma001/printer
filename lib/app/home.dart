@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'dart:io';
@@ -98,12 +99,9 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _printerList = printers;
       });
+      var cuitTrim = _cuitController.text.trim();
       try {
-        await registerDeviceToAPI(
-          _cuitController.text.trim(),
-          Platform.localHostname,
-          printers,
-        );
+        await registerDeviceToAPI(cuitTrim, Platform.localHostname, printers);
       } catch (e) {
         setState(() {
           _status = _MyHomeStatus.disconnected;
@@ -111,7 +109,12 @@ class _MyHomePageState extends State<MyHomePage> {
         print('$e');
         return;
       }
-      var (_, channel) = connectToPusher(printers, _cuitController.text);
+      var (subs, channel) = connectToPusher(printers, cuitTrim);
+      subs.onDone(() {
+        setState(() {
+          _status = _MyHomeStatus.disconnected;
+        });
+      });
       setState(() {
         _status = _MyHomeStatus.connected;
         _websocketChannel = channel;

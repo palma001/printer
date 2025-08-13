@@ -15,15 +15,7 @@ Future<String> registerDeviceToAPI(
   Map<String, dynamic> payload = {
     "cuit": cuit,
     "device_id": device_id,
-    "printers": printers
-        .map(
-          (printer) => {
-            "name": printer.name,
-            "identifier": printer.identifier,
-            "type": printer.type,
-          },
-        )
-        .toList(),
+    "printers": printers.map((printer) => printer.toMap()).toList(),
   };
   print(
     "Sending printer to API ${EnvVariables.apiUrl} with payload ${json.encode(payload)}",
@@ -33,7 +25,7 @@ Future<String> registerDeviceToAPI(
     body: json.encode(payload),
     headers: {"Content-Type": "application/json"},
   );
-  if (response.statusCode != 200) {
+  if (response.statusCode >= 400 || response.statusCode < 200) {
     throw Exception("Error saving device ${response.statusCode}");
   }
   return response.statusCode.toString();

@@ -15,10 +15,10 @@ Future<void> printTicket(
       receipt.line(element);
     });
     receipt.addQRCode(qrCode);
-    await WindowsPrinter.printRawData(
+    receipt.drawer();
+    await WindowsPrinter.printRichTextDocument(
       printerName: destination,
-      data: Uint8List.fromList(receipt.build()),
-      useRawDatatype: true,
+      content: content.join("\n"),
     );
   } catch (e) {
     throw Exception('Error sending ticket to printer at $destination: $e');
@@ -60,6 +60,7 @@ Future<void> printNetworkTicket(
 }
 
 Future<void> printInvoice(dynamic data, String destination) async {
+  print("Printing invoice to $destination and data: $data");
   var (content, qrImage, qrString) = generateTicketText(data);
   // Use a more robust regex to check for an IPv4 address format.
   if (RegExp(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$").hasMatch(destination)) {
