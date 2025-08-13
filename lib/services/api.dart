@@ -21,8 +21,8 @@ Future<String> registerDeviceToAPI(
       "printers": json.encode(printers.map((printer) => printer.name).toList()),
     },
   );
-  if (response.statusCode == 200) {
-    return response.statusCode.toString();
+  if (response.statusCode != 200) {
+    throw Exception("Error saving device ${response.statusCode}");
   }
-  return "Error saving device";
+  return response.statusCode.toString();
 }

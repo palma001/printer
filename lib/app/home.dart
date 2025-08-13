@@ -96,24 +96,26 @@ class _MyHomePageState extends State<MyHomePage> {
         _printerList = printers;
         _status = _MyHomeStatus.pending;
       });
-      await registerDeviceToAPI(
-        _cuitController.text,
-        Platform.localHostname,
-        printers,
-      ).catchError((error) {
-        print(error);
+      try {
+        await registerDeviceToAPI(
+          _cuitController.text,
+          Platform.localHostname,
+          printers,
+        );
+      } catch (e) {
         setState(() {
           _status = _MyHomeStatus.disconnected;
         });
-        return Future.value("");
-      });
+        print('$e');
+        return;
+      }
       var (_, channel) = connectToPusher(printers, _cuitController.text);
       setState(() {
         _status = _MyHomeStatus.connected;
         _websocketChannel = channel;
       });
     } catch (e) {
-      print('Error loading printers: $e');
+      print('$e');
     }
   }
 

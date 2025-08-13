@@ -23,6 +23,7 @@ Future<void> handlePusherMessage(
   List<Printer> printers,
 ) async {
   try {
+    print("Received message: $message");
     var msg = json.decode(message);
     var event = msg["event"];
     if (event == "pusher:connection_established") {
