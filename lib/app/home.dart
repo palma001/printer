@@ -91,10 +91,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _loadPrinters() async {
     try {
+      setState(() {
+        _status = _MyHomeStatus.pending;
+      });
       var printers = await getPrinters();
       setState(() {
         _printerList = printers;
-        _status = _MyHomeStatus.pending;
       });
       try {
         await registerDeviceToAPI(
