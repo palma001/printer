@@ -45,6 +45,7 @@ dependencies:
   ffi: ^2.1.4
   path: ^1.9.1
   win32_registry: ^2.1.0
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -94,3 +95,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_launcher_icons:
+   windows:
+    generate: true
+    image_path: "assets/images/printer-ui-win.png"
+    icon_size: 48 # min:48, max:256, default: 48
+
+

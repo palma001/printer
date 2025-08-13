@@ -17,11 +17,11 @@ Future<String> registerDeviceToAPI(
     "device_id": device_id,
     "printers": printers
         .map(
-          (printer) => json.encode({
+          (printer) => {
             "name": printer.name,
             "identifier": printer.identifier,
             "type": printer.type,
-          }),
+          },
         )
         .toList(),
   };
@@ -31,6 +31,7 @@ Future<String> registerDeviceToAPI(
   var response = await http.post(
     Uri.parse(EnvVariables.apiUrl!),
     body: json.encode(payload),
+    headers: {"Content-Type": "application/json"},
   );
   if (response.statusCode != 200) {
     throw Exception("Error saving device ${response.statusCode}");

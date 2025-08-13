@@ -77,8 +77,8 @@ class _MyHomePageState extends State<MyHomePage> {
       final String jsonString = await file.readAsString();
       final Map<String, dynamic> data = json.decode(jsonString);
 
-      data['cuit'] = _cuitController.text;
-      data['device_id'] = Platform.localHostname;
+      data['cuit'] = _cuitController.text.trim();
+      data['device_id'] = Platform.localHostname.trim();
 
       await file.writeAsString(json.encode(data));
       _loadPrinters();
@@ -100,7 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
       });
       try {
         await registerDeviceToAPI(
-          _cuitController.text,
+          _cuitController.text.trim(),
           Platform.localHostname,
           printers,
         );
