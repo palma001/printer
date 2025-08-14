@@ -6,4 +6,7 @@ class EnvVariables {
   static String? get pusherCluster => dotenv.env['PUSHER_CLUSTER'] ?? '';
   static String? get channel => dotenv.env['CHANNEL'] ?? '';
   static String? get eventName => dotenv.env['EVENT_NAME'] ?? '';
+  static String? get receiptFontName => dotenv.env['RECEIPT_FONT_NAME'] ?? '';
+  static String? get receiptFontSize => dotenv.env['RECEIPT_FONT_SIZE'] ?? '';
+  static String? get receiptPaperSize => dotenv.env['RECEIPT_PAPER_SIZE'] ?? '';
 }

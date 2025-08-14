@@ -33,7 +33,7 @@ import 'package:qr/qr.dart';
 
 (List<String>, QrImage, String) generateTicketText(dynamic data) {
   List<String> lines = [];
-  var sep = "-" * 32;
+  var sep = "-" * 20;
   var qr_image = null;
   var qr_string = null;
   Map<String, dynamic> company = data["company"] ?? {};
@@ -50,7 +50,7 @@ import 'package:qr/qr.dart';
   }
   lines.add(sep);
   // Factura centrada
-  if (data["billing"] != null) {
+  if (data["billing"] != null && fields["voucher_type"] != null) {
     lines.add(fields["voucher_type"]?["Desc"]?.toString().toUpperCase() ?? "");
     lines.add("Código: ${fields["voucher_type"]?["Id"] ?? ""}");
     lines.add(sep);
@@ -78,7 +78,7 @@ import 'package:qr/qr.dart';
   lines.add(sep);
 
   // Detalle
-  lines.add("Cant x P.Unit        IMPORTE");
+  lines.add("Cant x P.Unit  |  IMPORTE");
   lines.add("Descripcion");
   lines.add(sep);
 
@@ -90,6 +90,7 @@ import 'package:qr/qr.dart';
 
     lines.add(
       "${cantidad.toStringAsFixed(2)} x ${precio.toStringAsFixed(2)}"
+      "  |  "
       "${subtotal.toStringAsFixed(2)}",
     );
     if (tax != null && data["billing"] != null) {
@@ -106,7 +107,7 @@ import 'package:qr/qr.dart';
   lines.add(sep);
 
   // CAE y Vto
-  if (data["billing"] != null) {
+  if (data["billing"] != null && fields["cae"] != null) {
     lines.add("CAE: ${fields["cae"] ?? ""}");
     lines.add("Vto: ${fields["caef_ch_vto"] ?? ""}");
     if (data["billing"] != null) {

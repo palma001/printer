@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
+import 'package:printer_ui_win/constants/env.dart';
 import 'package:printer_ui_win/services/ticket.dart';
 import 'package:windows_printer/windows_printer.dart';
 
@@ -10,15 +11,11 @@ Future<void> printTicket(
   String qrCode,
 ) async {
   try {
-    var receipt = WPReceiptBuilder(wpPaperSize: WPPaperSize.mm80);
-    content.forEach((element) {
-      receipt.line(element);
-    });
-    receipt.addQRCode(qrCode);
-    receipt.drawer();
     await WindowsPrinter.printRichTextDocument(
       printerName: destination,
       content: content.join("\n"),
+      fontSize: 10,
+      fontName: "Arial",
     );
   } catch (e) {
     throw Exception('Error sending ticket to printer at $destination: $e');
