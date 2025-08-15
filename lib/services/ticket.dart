@@ -36,7 +36,7 @@ import "package:windows_printer/windows_printer.dart";
 
 (List<String>, QrImage?, String?) generateTicketText(dynamic data) {
   List<String> lines = [];
-  var sep = "-" * 32;
+  var sep = "-" * 40;
   var qr_image = null;
   var qr_string = null;
   Map<String, dynamic> company = data["company"] ?? {};
@@ -81,7 +81,7 @@ import "package:windows_printer/windows_printer.dart";
   lines.add(sep);
 
   // Detalle
-  lines.add("Cant x P.Unit        IMPORTE");
+  lines.add("Cant x P.Unit".ljust(19) + "IMPORTE".rjust(10));
   lines.add("Descripcion");
   lines.add(sep);
 

@@ -12,4 +12,11 @@ extension StringExtension on String {
     }
     return padString * (length - this.length) + this;
   }
+
+  String toPrinter([int length = 40]) {
+    if (this.length <= 40) {
+      return this;
+    }
+    return this.substring(0, length);
+  }
 }
