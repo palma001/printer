@@ -6,12 +6,12 @@ import "package:printer_ui_win/services/ticket.dart";
 import "package:windows_printer/windows_printer.dart";
 
 Future<void> printTicket(String destination, dynamic data) async {
-  // var (content, _, _) = generateTicketText(data);
-  Uint8List receipt = Uint8List.fromList(generateTicketReceipt(data).build());
+  var (content, _, _) = generateTicketText(data);
+  // Uint8List receipt = Uint8List.fromList(generateTicketReceipt(data).build());
   try {
     await WindowsPrinter.printRichTextDocument(
       printerName: destination,
-      content: receipt.toString(),
+      content: content.join("\n"),
       fontSize: int.parse(EnvVariables.receiptFontSize ?? "10"),
       fontName: EnvVariables.receiptFontName ?? "Arial",
     );
