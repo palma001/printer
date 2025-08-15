@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:intl/intl.dart';
 import "package:printer_ui_win/constants/env.dart";
+import "package:printer_ui_win/utils/string_extension.dart";
 import 'package:qr/qr.dart';
 import "package:windows_printer/windows_printer.dart";
 
@@ -35,7 +36,7 @@ import "package:windows_printer/windows_printer.dart";
 
 (List<String>, QrImage?, String?) generateTicketText(dynamic data) {
   List<String> lines = [];
-  var sep = "-" * 20;
+  var sep = "-" * 32;
   var qr_image = null;
   var qr_string = null;
   Map<String, dynamic> company = data["company"] ?? {};
@@ -80,7 +81,7 @@ import "package:windows_printer/windows_printer.dart";
   lines.add(sep);
 
   // Detalle
-  lines.add("Cant x P.Unit  |  IMPORTE");
+  lines.add("Cant x P.Unit        IMPORTE");
   lines.add("Descripcion");
   lines.add(sep);
 
@@ -91,9 +92,10 @@ import "package:windows_printer/windows_printer.dart";
     var tax = double.parse("${prod["pivot"]?["taxe"] ?? "0.0"}");
 
     lines.add(
-      "${cantidad.toStringAsFixed(2)} x ${precio.toStringAsFixed(2)}"
-      "  |  "
-      "${subtotal.toStringAsFixed(2)}",
+      "${cantidad.toStringAsFixed(2)} x ${precio.toStringAsFixed(2)}".ljust(
+            19,
+          ) +
+          subtotal.toStringAsFixed(2).rjust(10),
     );
     if (tax > 0.0 && data["billing"] != null) {
       lines.add("IVA ${tax}%");

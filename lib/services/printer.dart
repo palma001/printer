@@ -7,7 +7,6 @@ import "package:windows_printer/windows_printer.dart";
 
 Future<void> printTicket(String destination, dynamic data) async {
   var (content, _, _) = generateTicketText(data);
-  // Uint8List receipt = Uint8List.fromList(generateTicketReceipt(data).build());
   try {
     await WindowsPrinter.printRichTextDocument(
       printerName: destination,
