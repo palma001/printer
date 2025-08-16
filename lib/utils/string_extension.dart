@@ -13,10 +13,28 @@ extension StringExtension on String {
     return padString * (length - this.length) + this;
   }
 
-  String toPrinter([int length = 40]) {
+  String wrap([int length = 40]) {
     if (this.length <= 40) {
       return this;
     }
-    return this.substring(0, length);
+    return split("")
+        .fold<List<String>>([""], (previousValue, element) {
+          var currentLine = previousValue.last;
+          if (currentLine.length < length) {
+            previousValue[previousValue.length - 1] = currentLine + element;
+          } else {
+            previousValue.add(element);
+          }
+          return previousValue;
+        })
+        .join("\n");
+  }
+
+  String expand(String item, [int length = 40]) {
+    if (this.length + item.length > (length + 1)) {
+      return ("$this $item").wrap(length);
+    }
+    String spaces = " " * (length - this.length - item.length);
+    return "$this$spaces$item".wrap(length);
   }
 }

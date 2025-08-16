@@ -61,9 +61,8 @@ import "package:windows_printer/windows_printer.dart";
   // Datos de la factura
   lines.add("NRO: ${data["code"] ?? ""}");
   lines.add("CLIENTE: ${data["client"]?["name"] ?? "CONSUMIDOR FINAL"}");
-  lines.add("FECHA: ${data["date"] ?? ""}");
-  lines.add("HORA: ${data["hour"] ?? ""}");
-  lines.add("HORA: ${data["hour"] ?? ""}");
+  lines.add("FECHA:".expand("${data["date"] ?? ""}"));
+  lines.add("HORA:".expand("${data["hour"] ?? ""}"));
   Map vendedor = data["seller"] ?? {};
   lines.add("Vendedor: ${vendedor["name"] ?? ""}");
   lines.add("TIPO: ${data["invoice_type"]?["name"] ?? ""}");
@@ -81,8 +80,8 @@ import "package:windows_printer/windows_printer.dart";
   lines.add(sep);
 
   // Detalle
-  lines.add("Cant x P.Unit".ljust(19) + "IMPORTE".rjust(10));
-  lines.add("Descripcion");
+  lines.add("Cant x P.Unit".expand("IMPORTE"));
+  lines.add("Descripción");
   lines.add(sep);
 
   for (var prod in data["products"] ?? []) {
@@ -92,10 +91,9 @@ import "package:windows_printer/windows_printer.dart";
     var tax = double.parse("${prod["pivot"]?["taxe"] ?? "0.0"}");
 
     lines.add(
-      "${cantidad.toStringAsFixed(2)} x ${precio.toStringAsFixed(2)}".ljust(
-            19,
-          ) +
-          subtotal.toStringAsFixed(2).rjust(10),
+      "${cantidad.toStringAsFixed(2)} x ${precio.toStringAsFixed(2)}".expand(
+        subtotal.toStringAsFixed(2),
+      ),
     );
     if (tax > 0.0 && data["billing"] != null) {
       lines.add("IVA ${tax}%");
@@ -106,7 +104,9 @@ import "package:windows_printer/windows_printer.dart";
 
   lines.add(sep);
   lines.add(
-    "TOTAL: ${double.parse("${data['total'] ?? "0.0"}").toStringAsFixed(2)}",
+    "TOTAL:".expand(
+      double.parse("${data['total'] ?? "0.0"}").toStringAsFixed(2),
+    ),
   );
   lines.add(sep);
 
