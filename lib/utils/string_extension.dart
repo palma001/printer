@@ -37,4 +37,12 @@ extension StringExtension on String {
     String spaces = " " * (length - this.length - item.length);
     return "$this$spaces$item".wrap(length);
   }
+
+  String center([length = 40]) {
+    if (this.length >= length) {
+      return this;
+    }
+    String padding = " " * ((length - this.length) / 2).floor();
+    return "$padding$this\n";
+  }
 }

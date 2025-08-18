@@ -25,8 +25,13 @@ class ReceiptBuilder {
     return this;
   }
 
-  ReceiptBuilder addHeaderLineS(List<String> headerLines) {
-    _header.addAll(headerLines.map((line) => line.wrap(linesLength)));
+  ReceiptBuilder addHeaderLines(
+    List<String> headerLines, {
+    bool center = false,
+  }) {
+    _header.addAll(
+      headerLines.map((line) => line.wrap(linesLength).center(linesLength)),
+    );
     return this;
   }
 

@@ -43,7 +43,7 @@ import "package:windows_printer/windows_printer.dart";
   Map<String, Map> fields = data["electronic_invoice"]?["fields"] ?? {};
 
   // Encabezado
-  receiptBuilder.addHeaderLineS([
+  receiptBuilder.addHeaderLines([
     "RAZON SOCIAL: ${company["name"]?.toString().toUpperCase()}",
     "${data["client"]?["name"] ?? ""}",
     "DIRECCION: ${company["address"] ?? ""}",
@@ -224,4 +224,77 @@ WPReceiptBuilder generateTicketReceipt(dynamic data) {
   receiptBuilder.blank(3);
   receiptBuilder.cut(partial: false);
   return receiptBuilder;
+}
+
+(String, QrImage?, String?) generateComandaText(dynamic data) {
+  QrImage? qrImage;
+  String? qrString;
+  final ReceiptBuilder receiptBuilder = ReceiptBuilder();
+  Map<String, dynamic> company = data["company"] ?? {};
+  Map<String, Map> fields = data["electronic_invoice"]?["fields"] ?? {};
+
+  // Encabezado
+  receiptBuilder.addHeaderLines([
+    "${company["name"]?.toString().toUpperCase()}",
+  ]).addSep();
+  // Factura centrada
+  if (data["billing"] != null && fields["voucher_type"] != null) {
+    receiptBuilder.addLines([
+      fields["voucher_type"]?["Desc"]?.toString().toUpperCase() ?? "",
+      "Código: ${fields["voucher_type"]?["Id"] ?? ""}",
+    ]).addSep();
+  }
+  // Datos de la factura
+  Map vendedor = data["seller"] ?? {};
+  receiptBuilder.addLines([
+    "NRO: ${data["code"] ?? ""}",
+    "CLIENTE: ${data["client"]?["name"] ?? "CONSUMIDOR FINAL"}",
+    "FECHA:".expand("${data["date"] ?? ""}"),
+    "HORA:".expand("${data["hour"] ?? ""}"),
+    "Vendedor: ${vendedor["name"] ?? ""}",
+    "TIPO: ${data["invoice_type"]?["name"] ?? ""}",
+    ...((data["billing"] != null)
+        ? ["CONCEPTO: ${fields["concept_type"]?["Desc"] ?? ""}"]
+        : []),
+    ...((data["tables"] != null)
+        ? data["tables"].map((table) {
+            return "MESA: ${table["name"] ?? ""} SALA ${table["living_room"]?["name"] ?? ""}";
+          })
+        : []),
+  ]).addSep();
+
+  // Detalle
+  receiptBuilder.addItem("Artículo".toUpperCase(), "CANT");
+
+  double totalQuantity = 0.0;
+  for (var prod in data["products"] ?? []) {
+    double cantidad = double.parse("${prod["pivot"]?["amount"] ?? "0.0"}");
+    totalQuantity += cantidad;
+    receiptBuilder.addItem(
+      prod["name"]?.toString().toUpperCase() ?? "",
+      cantidad.toStringAsFixed(2),
+    );
+  }
+
+  receiptBuilder.addSep();
+  receiptBuilder
+      .addItem("TOTAL:", totalQuantity.toStringAsFixed(2))
+      .addSep()
+      .addLines([
+        // CAE y Vto
+        ...(data["billing"] != null && fields["cae"] != null)
+            ? [
+                "CAE: ${fields["cae"] ?? ""}",
+                "Vto: ${fields["caef_ch_vto"] ?? ""}",
+                ...((data["billing"] != null) ? [] : []),
+              ]
+            : [],
+      ])
+      .addLines(["\n" * 1, "¡Gracias por su compra!".toUpperCase(), "\n"]);
+
+  if (data["billing"] != null) {
+    (qrImage, qrString) = generate_afip_qr(data, company, fields);
+  }
+
+  return (receiptBuilder.build(), qrImage, qrString);
 }
