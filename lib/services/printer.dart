@@ -10,7 +10,7 @@ Future<void> printTicket(String destination, dynamic data) async {
   try {
     await WindowsPrinter.printRichTextDocument(
       printerName: destination,
-      content: content.join("\n"),
+      content: content,
       fontSize: int.parse(EnvVariables.receiptFontSize ?? "10"),
       fontName: EnvVariables.receiptFontName ?? "Arial",
     );
