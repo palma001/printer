@@ -30,13 +30,19 @@ class ReceiptBuilder {
     bool center = false,
   }) {
     _header.addAll(
-      headerLines.map((line) => line.wrap(linesLength).center(linesLength)),
+      headerLines
+          .map((line) => line.wrap(linesLength))
+          .map((line) => center ? line.center(linesLength) : line),
     );
     return this;
   }
 
-  ReceiptBuilder addLines(List<String> lines) {
-    _content.addAll(lines.map((line) => line.wrap(linesLength)));
+  ReceiptBuilder addLines(List<String> lines, {bool center = false}) {
+    _content.addAll(
+      lines
+          .map((line) => line.wrap(linesLength))
+          .map((line) => center ? line.center(linesLength) : line),
+    );
     return this;
   }
 
@@ -45,8 +51,15 @@ class ReceiptBuilder {
     return this;
   }
 
-  ReceiptBuilder addFooterLines(List<String> footerLines) {
-    _content.addAll(footerLines.map((line) => line.wrap(linesLength)));
+  ReceiptBuilder addFooterLines(
+    List<String> footerLines, {
+    bool center = false,
+  }) {
+    _content.addAll(
+      footerLines
+          .map((line) => line.wrap(linesLength))
+          .map((line) => center ? line.center(linesLength) : line),
+    );
     return this;
   }
 }

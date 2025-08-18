@@ -290,7 +290,11 @@ WPReceiptBuilder generateTicketReceipt(dynamic data) {
               ]
             : [],
       ])
-      .addLines(["\n" * 1, "¡Gracias por su compra!".toUpperCase(), "\n"]);
+      .addLines([
+        "\n" * 1,
+        "¡Gracias por su compra!".toUpperCase(),
+        "\n",
+      ], center: true);
 
   if (data["billing"] != null) {
     (qrImage, qrString) = generate_afip_qr(data, company, fields);
