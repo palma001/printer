@@ -6,8 +6,9 @@ import "package:printer_ui_win/services/ticket.dart";
 import "package:windows_printer/windows_printer.dart";
 
 Future<void> printTicket(String destination, dynamic data) async {
-  var (content, _, _) = generateTicketText(data);
-  // var (content, _, _) = generateComandaText(data);
+  var (content, _, _) = (data["type"] ?? "").toLowerCase() == "comanda"
+      ? generateComandaText(data)
+      : generateTicketText(data);
   try {
     await WindowsPrinter.printRichTextDocument(
       printerName: destination,
