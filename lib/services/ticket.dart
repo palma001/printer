@@ -1,7 +1,6 @@
 import "dart:convert";
 
 import "package:intl/intl.dart";
-import "package:printer_ui_win/constants/env.dart";
 import "package:printer_ui_win/utils/receipt_builder.dart";
 import "package:printer_ui_win/utils/string_extension.dart";
 import "package:qr/qr.dart";
