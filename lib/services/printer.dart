@@ -10,7 +10,7 @@ Future<void> printTicket(
   dynamic data,
   int printerSize,
 ) async {
-  var (content, _, _) = (data["type"] ?? "").toLowerCase() == "comanda"
+  var (content, _, _) = (data["type"] ?? "").toLowerCase() == "command"
       ? generateComandaText(data, printerSize)
       : generateTicketText(data, printerSize);
   try {
