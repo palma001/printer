@@ -41,13 +41,14 @@ Future<void> handlePusherMessage(
       var payload = json.decode(msg["data"]);
       var invoice = payload["invoice"];
       var printer = payload["printer"];
+      int printerSize = printer["size"];
       print(
         "Sending: to print ${invoice?["id"] ?? "no invoice"} to ${printer["name"]}",
       );
       if (invoice != null) {
-        await printInvoice(invoice, printer["name"]);
+        await printInvoice(invoice, printer["name"], printerSize);
       } else if (printers.isNotEmpty) {
-        await printInvoice(invoice, printers[0].identifier);
+        await printInvoice(invoice, printers[0].identifier, printerSize);
       }
     }
   } catch (e) {

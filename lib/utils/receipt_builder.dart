@@ -4,12 +4,12 @@ class ReceiptBuilder {
   final List<String> _header;
   final List<String> _content;
   final List<String> _footer;
-  int linesLength = 40;
+  int linesLength = 32;
   String get _sep {
     return "-" * linesLength;
   }
 
-  ReceiptBuilder({this.linesLength = 40})
+  ReceiptBuilder({this.linesLength = 32})
     : _footer = [],
       _content = [],
       _header = [];
