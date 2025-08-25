@@ -1,15 +1,15 @@
-import 'dart:async';
-import 'dart:math';
+import "dart:async";
+import "dart:math";
 
-import 'package:flutter/material.dart';
-import 'dart:io';
-import 'dart:convert';
+import "package:flutter/material.dart";
+import "dart:io";
+import "dart:convert";
 
-import 'package:path_provider/path_provider.dart';
-import 'package:printer_ui_win/models/printer.dart';
-import 'package:printer_ui_win/services/api.dart';
-import 'package:printer_ui_win/services/websocket.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
+import "package:path_provider/path_provider.dart";
+import "package:printer_ui_win/models/printer.dart";
+import "package:printer_ui_win/services/api.dart";
+import "package:printer_ui_win/services/websocket.dart";
+import "package:web_socket_channel/web_socket_channel.dart";
 
 import "package:printer_ui_win/utils/print.dart";
 
@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _loadConfig() async {
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final path = '${directory.path}/config.json';
+      final path = "${directory.path}/config.json";
       final file = File(path);
 
       if (!await file.exists()) {
@@ -53,40 +53,40 @@ class _MyHomePageState extends State<MyHomePage> {
 
       final String jsonString = await file.readAsString();
       final Map<String, dynamic> data = json.decode(jsonString);
-      final String? cuit = data['cuit'];
-      print('CUIT from $path: $cuit');
+      final String? cuit = data["cuit"];
+      print("CUIT from $path: $cuit");
       if (cuit != null) {
         _cuitController.text = cuit;
         // _loadPrinters();
       }
     } catch (e) {
-      print('Error handling config.json: $e');
+      print("Error handling config.json: $e");
     }
   }
 
   void _saveConfigCUIT() async {
     if (_cuitController.text.isEmpty) {
-      _showAlertDialog('Validation Error', 'CUIT cannot be empty.');
+      _showAlertDialog("Validation Error", "CUIT cannot be empty.");
       return;
     }
 
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final path = '${directory.path}/config.json';
+      final path = "${directory.path}/config.json";
       final file = File(path);
 
       final String jsonString = await file.readAsString();
       final Map<String, dynamic> data = json.decode(jsonString);
 
-      data['cuit'] = _cuitController.text.trim();
-      data['device_id'] = Platform.localHostname.trim();
+      data["cuit"] = _cuitController.text.trim();
+      data["device_id"] = Platform.localHostname.trim();
 
       await file.writeAsString(json.encode(data));
       _loadPrinters();
       (_cuitController.text, Platform.localHostname, _printerList);
     } catch (e) {
-      print('Error saving config.json: $e');
-      _showAlertDialog('Error', 'An error occurred while saving the CUIT.');
+      print("Error saving config.json: $e");
+      _showAlertDialog("Error", "An error occurred while saving the CUIT.");
     }
   }
 
@@ -106,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           _status = _MyHomeStatus.disconnected;
         });
-        print('$e');
+        print("$e");
         return;
       }
       var (subs, channel) = connectToPusher(printers, cuitTrim);
@@ -120,7 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _websocketChannel = channel;
       });
     } catch (e) {
-      print('$e');
+      print("$e");
     }
   }
 
@@ -133,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
           content: Text(content),
           actions: <Widget>[
             TextButton(
-              child: const Text('OK'),
+              child: const Text("OK"),
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
           ],

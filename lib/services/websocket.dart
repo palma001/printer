@@ -37,7 +37,7 @@ Future<void> handlePusherMessage(
       );
       return;
     }
-    if (event == "${EnvVariables.eventName}_${cuit}") {
+    if (event == "${EnvVariables.eventName}_$cuit") {
       var payload = json.decode(msg["data"]);
       var invoice = payload["invoice"];
       var printer = payload["printer"];

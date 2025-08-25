@@ -1,16 +1,18 @@
-import "package:printer_ui_win/constants/env.dart";
 import "package:printer_ui_win/utils/string_extension.dart";
 
 class ReceiptBuilder {
   final List<String> _header;
   final List<String> _content;
   final List<String> _footer;
-  int linesLength = EnvVariables.receiptPaperSize == "58" ? 40 : 48;
+  int linesLength = 40;
   String get _sep {
     return "-" * linesLength;
   }
 
-  ReceiptBuilder() : _footer = [], _content = [], _header = [];
+  ReceiptBuilder({this.linesLength = 40})
+    : _footer = [],
+      _content = [],
+      _header = [];
 
   String build() {
     return [
@@ -29,20 +31,12 @@ class ReceiptBuilder {
     List<String> headerLines, {
     bool center = false,
   }) {
-    _header.addAll(
-      headerLines
-          .map((line) => line.wrap(linesLength))
-          .map((line) => center ? line.center(linesLength) : line),
-    );
+    _header.addAll(headerLines.map((line) => line.wrap(linesLength, center)));
     return this;
   }
 
   ReceiptBuilder addLines(List<String> lines, {bool center = false}) {
-    _content.addAll(
-      lines
-          .map((line) => line.wrap(linesLength))
-          .map((line) => center ? line.center(linesLength) : line),
-    );
+    _content.addAll(lines.map((line) => line.wrap(linesLength, center)));
     return this;
   }
 
@@ -55,11 +49,7 @@ class ReceiptBuilder {
     List<String> footerLines, {
     bool center = false,
   }) {
-    _content.addAll(
-      footerLines
-          .map((line) => line.wrap(linesLength))
-          .map((line) => center ? line.center(linesLength) : line),
-    );
+    _content.addAll(footerLines.map((line) => line.wrap(linesLength, center)));
     return this;
   }
 }

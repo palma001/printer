@@ -1,12 +1,12 @@
-import 'dart:convert';
+import "dart:convert";
 
-import 'package:printer_ui_win/constants/env.dart';
-import 'package:http/http.dart' as http;
-import 'package:printer_ui_win/models/printer.dart';
+import "package:printer_ui_win/constants/env.dart";
+import "package:http/http.dart" as http;
+import "package:printer_ui_win/models/printer.dart";
 
 Future<String> registerDeviceToAPI(
   String cuit,
-  String device_id,
+  String deviceId,
   List<Printer> printers,
 ) async {
   if (EnvVariables.apiUrl == null) {
@@ -14,7 +14,7 @@ Future<String> registerDeviceToAPI(
   }
   Map<String, dynamic> payload = {
     "cuit": cuit,
-    "device_id": device_id,
+    "device_id": deviceId,
     "printers": printers.map((printer) => printer.toMap()).toList(),
   };
   print(

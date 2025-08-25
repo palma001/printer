@@ -13,15 +13,17 @@ extension StringExtension on String {
     return padString * (length - this.length) + this;
   }
 
-  String wrap([int length = 40]) {
-    if (this.length <= 40) {
+  String wrap([int length = 40, bool center = false]) {
+    if (this.length <= length) {
       return this;
     }
     return split("")
         .fold<List<String>>([""], (previousValue, element) {
           var currentLine = previousValue.last;
           if (currentLine.length < length) {
-            previousValue[previousValue.length - 1] = currentLine + element;
+            previousValue[previousValue.length - 1] = center
+                ? (currentLine + element).center(length)
+                : (currentLine + element);
           } else {
             previousValue.add(element);
           }
@@ -38,11 +40,11 @@ extension StringExtension on String {
     return "$this$spaces$item".wrap(length);
   }
 
-  String center([length = 40]) {
+  String center([int length = 40]) {
     if (this.length >= length) {
       return this;
     }
     String padding = " " * ((length - this.length) / 2).floor();
-    return "$padding$this\n";
+    return "$padding$this".wrap(length, true);
   }
 }

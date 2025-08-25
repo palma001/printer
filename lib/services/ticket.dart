@@ -1,21 +1,21 @@
-import 'dart:convert';
+import "dart:convert";
 
-import 'package:intl/intl.dart';
+import "package:intl/intl.dart";
 import "package:printer_ui_win/constants/env.dart";
 import "package:printer_ui_win/utils/receipt_builder.dart";
 import "package:printer_ui_win/utils/string_extension.dart";
-import 'package:qr/qr.dart';
+import "package:qr/qr.dart";
 import "package:windows_printer/windows_printer.dart";
 
 (QrImage, String) generate_afip_qr(
   dynamic data,
-  dynamic company_session,
+  dynamic companySession,
   dynamic fields,
 ) {
-  var doc_qr = {
+  var docQr = {
     "ver": 1,
     "fecha": data["date"] ?? DateFormat("yyyy-MM-dd").format(DateTime.now()),
-    "cuit": int.parse("${company_session["document_number"] ?? "0"}"),
+    "cuit": int.parse("${companySession["document_number"] ?? "0"}"),
     "ptoVta": fields["point_of_sale"],
     "tipoCmp": fields["voucher_type"]?["Id"] ?? "",
     "nroCmp": fields["cbte_hasta"],
@@ -28,7 +28,7 @@ import "package:windows_printer/windows_printer.dart";
     "codAut": int.parse("${fields["cae"] ?? "0"}"),
   };
   var encoded = base64.encode(
-    utf8.encode(json.encode(doc_qr).replaceAll(" ", "").replaceAll("\n", "")),
+    utf8.encode(json.encode(docQr).replaceAll(" ", "").replaceAll("\n", "")),
   );
   var url =
       "https://servicioscf.afip.gob.ar/publico/comprobantes/cae.aspx?p=$encoded";
@@ -38,7 +38,9 @@ import "package:windows_printer/windows_printer.dart";
 (String, QrImage?, String?) generateTicketText(dynamic data) {
   QrImage? qrImage;
   String? qrString;
-  final ReceiptBuilder receiptBuilder = ReceiptBuilder();
+  final ReceiptBuilder receiptBuilder = ReceiptBuilder(
+    linesLength: int.parse(EnvVariables.receiptTicketPaperSize),
+  );
   Map<String, dynamic> company = data["company"] ?? {};
   Map<String, Map> fields = data["electronic_invoice"]?["fields"] ?? {};
 
@@ -67,8 +69,14 @@ import "package:windows_printer/windows_printer.dart";
   receiptBuilder.addLines([
     "NRO: ${data["code"] ?? ""}",
     "CLIENTE: ${data["client"]?["name"] ?? "CONSUMIDOR FINAL"}",
-    "FECHA:".expand("${data["date"] ?? ""}"),
-    "HORA:".expand("${data["hour"] ?? ""}"),
+    "FECHA:".expand(
+      "${data["date"] ?? ""}",
+      int.parse(EnvVariables.receiptTicketPaperSize),
+    ),
+    "HORA:".expand(
+      "${data["hour"] ?? ""}",
+      int.parse(EnvVariables.receiptTicketPaperSize),
+    ),
     "Vendedor: ${vendedor["name"] ?? ""}",
     "TIPO: ${data["invoice_type"]?["name"] ?? ""}",
     ...((data["billing"] != null)
@@ -96,7 +104,7 @@ import "package:windows_printer/windows_printer.dart";
       subtotal.toStringAsFixed(2),
     );
     if (tax > 0.0 && data["billing"] != null) {
-      receiptBuilder.addLines(["IVA ${tax}%"]);
+      receiptBuilder.addLines(["IVA $tax%"]);
     }
 
     receiptBuilder.addLines([prod["name"]?.toString().toUpperCase() ?? ""]);
@@ -130,7 +138,7 @@ import "package:windows_printer/windows_printer.dart";
 
 WPReceiptBuilder generateTicketReceipt(dynamic data) {
   WPReceiptBuilder receiptBuilder = WPReceiptBuilder(
-    wpPaperSize: EnvVariables.receiptPaperSize == "58"
+    wpPaperSize: data["type"] == "commanda"
         ? WPPaperSize.mm58
         : WPPaperSize.mm80,
   );
@@ -197,10 +205,10 @@ WPReceiptBuilder generateTicketReceipt(dynamic data) {
 
     receiptBuilder.item(
       "${cantidad.toStringAsFixed(2)} x ${precio.toStringAsFixed(2)}",
-      "${subtotal.toStringAsFixed(2)}",
+      subtotal.toStringAsFixed(2),
     );
     if (tax > 0.0 && data["billing"] != null) {
-      receiptBuilder.line("IVA ${tax}%");
+      receiptBuilder.line("IVA $tax%");
     }
 
     receiptBuilder.line(prod["name"]?.toString().toUpperCase() ?? "");
@@ -208,7 +216,7 @@ WPReceiptBuilder generateTicketReceipt(dynamic data) {
 
   receiptBuilder.separator();
   receiptBuilder.totalAmt(
-    "${double.parse("${data['total'] ?? "0.0"}").toStringAsFixed(2)}",
+    double.parse("${data['total'] ?? "0.0"}").toStringAsFixed(2),
   );
   receiptBuilder.separator();
 
@@ -229,7 +237,9 @@ WPReceiptBuilder generateTicketReceipt(dynamic data) {
 (String, QrImage?, String?) generateComandaText(dynamic data) {
   QrImage? qrImage;
   String? qrString;
-  final ReceiptBuilder receiptBuilder = ReceiptBuilder();
+  final ReceiptBuilder receiptBuilder = ReceiptBuilder(
+    linesLength: int.parse(EnvVariables.receiptComandaPaperSize),
+  );
   Map<String, dynamic> company = data["company"] ?? {};
   Map<String, Map> fields = data["electronic_invoice"]?["fields"] ?? {};
 
@@ -249,8 +259,14 @@ WPReceiptBuilder generateTicketReceipt(dynamic data) {
   receiptBuilder.addLines([
     "NRO: ${data["code"] ?? ""}",
     "CLIENTE: ${data["client"]?["name"] ?? "CONSUMIDOR FINAL"}",
-    "FECHA:".expand("${data["date"] ?? ""}"),
-    "HORA:".expand("${data["hour"] ?? ""}"),
+    "FECHA:".expand(
+      "${data["date"] ?? ""}",
+      int.parse(EnvVariables.receiptComandaPaperSize),
+    ),
+    "HORA:".expand(
+      "${data["hour"] ?? ""}",
+      int.parse(EnvVariables.receiptComandaPaperSize),
+    ),
     "Vendedor: ${vendedor["name"] ?? ""}",
     "TIPO: ${data["invoice_type"]?["name"] ?? ""}",
     ...((data["billing"] != null)

@@ -1,4 +1,4 @@
-import 'package:windows_printer/windows_printer.dart';
+import "package:windows_printer/windows_printer.dart";
 import "../models/printer.dart";
 
 Future<List<Printer>> getPrinters() async {
