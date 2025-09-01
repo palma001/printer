@@ -1,7 +1,9 @@
 import "dart:convert";
 
+import "package:flutter/foundation.dart";
 import "package:intl/intl.dart";
-import "package:printer_ui_win/utils/receipt_builder.dart";
+import "package:printer_ui_win/utils/receipt_pdf_builder.dart";
+import "package:printer_ui_win/utils/receipt_txt_builder.dart";
 import "package:printer_ui_win/utils/string_extension.dart";
 import "package:qr/qr.dart";
 import "package:windows_printer/windows_printer.dart";
@@ -37,7 +39,7 @@ import "package:windows_printer/windows_printer.dart";
 (String, QrImage?, String?) generateTicketText(dynamic data, int printerSize) {
   QrImage? qrImage;
   String? qrString;
-  final ReceiptBuilder receiptBuilder = ReceiptBuilder(
+  final ReceiptTxtBuilder receiptBuilder = ReceiptTxtBuilder(
     linesLength: printerSize - 26,
   );
   Map<String, dynamic> company = data["company"] ?? {};
@@ -228,7 +230,7 @@ WPReceiptBuilder generateTicketReceipt(dynamic data, int printerSize) {
 (String, QrImage?, String?) generateComandaText(dynamic data, int printerSize) {
   QrImage? qrImage;
   String? qrString;
-  final ReceiptBuilder receiptBuilder = ReceiptBuilder(
+  final ReceiptTxtBuilder receiptBuilder = ReceiptTxtBuilder(
     linesLength: printerSize - 26,
   );
   Map<String, dynamic> company = data["company"] ?? {};
@@ -302,4 +304,9 @@ WPReceiptBuilder generateTicketReceipt(dynamic data, int printerSize) {
   }
 
   return (receiptBuilder.build(), qrImage, qrString);
+}
+
+Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
+  ReceiptPDFBuilder builder = ReceiptPDFBuilder();
+  return builder.build();
 }

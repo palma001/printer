@@ -1,6 +1,6 @@
 import "package:printer_ui_win/utils/string_extension.dart";
 
-class ReceiptBuilder {
+class ReceiptTxtBuilder {
   final List<String> _header;
   final List<String> _content;
   final List<String> _footer;
@@ -9,7 +9,7 @@ class ReceiptBuilder {
     return "-" * linesLength;
   }
 
-  ReceiptBuilder({this.linesLength = 32})
+  ReceiptTxtBuilder({this.linesLength = 32})
     : _footer = [],
       _content = [],
       _header = [];
@@ -22,12 +22,12 @@ class ReceiptBuilder {
     ].join("\n");
   }
 
-  ReceiptBuilder addSep() {
+  ReceiptTxtBuilder addSep() {
     _content.add(_sep);
     return this;
   }
 
-  ReceiptBuilder addHeaderLines(
+  ReceiptTxtBuilder addHeaderLines(
     List<String> headerLines, {
     bool center = false,
   }) {
@@ -35,17 +35,17 @@ class ReceiptBuilder {
     return this;
   }
 
-  ReceiptBuilder addLines(List<String> lines, {bool center = false}) {
+  ReceiptTxtBuilder addLines(List<String> lines, {bool center = false}) {
     _content.addAll(lines.map((line) => line.wrap(linesLength, center)));
     return this;
   }
 
-  ReceiptBuilder addItem(String left, String right) {
+  ReceiptTxtBuilder addItem(String left, String right) {
     _content.add(left.expand(right, linesLength).wrap(linesLength));
     return this;
   }
 
-  ReceiptBuilder addFooterLines(
+  ReceiptTxtBuilder addFooterLines(
     List<String> footerLines, {
     bool center = false,
   }) {

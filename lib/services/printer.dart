@@ -1,25 +1,37 @@
 import "dart:io";
 import "dart:typed_data";
+
 import "package:flutter/foundation.dart";
-import "package:printer_ui_win/constants/env.dart";
 import "package:printer_ui_win/services/ticket.dart";
-import "package:windows_printer/windows_printer.dart";
+import "package:printing/printing.dart";
 
 Future<void> printTicket(
   String destination,
   dynamic data,
   int printerSize,
 ) async {
-  var (content, _, _) = (data["type"] ?? "").toLowerCase() == "command"
-      ? generateComandaText(data, printerSize)
-      : generateTicketText(data, printerSize);
+  // var (content, _, _) = (data["type"] ?? "").toLowerCase() == "command"
+  //     ? generateComandaText(data, printerSize)
+  //     : generateTicketText(data, printerSize);
+  Uint8List contentPDF = await generatePDFReceipt(data, printerSize);
+  Printer printer = await Printing.listPrinters()
+      .asStream()
+      .map(
+        (printers) =>
+            printers.firstWhere((printer) => printer.name == destination),
+      )
+      .first;
   try {
-    await WindowsPrinter.printRichTextDocument(
-      printerName: destination,
-      content: content,
-      fontSize: int.parse(EnvVariables.receiptFontSize ?? "10"),
-      fontName: EnvVariables.receiptFontName ?? "Arial",
+    await Printing.directPrintPdf(
+      printer: printer,
+      onLayout: (_) => contentPDF,
     );
+    // await WindowsPrinter.printRichTextDocument(
+    //   printerName: destination,
+    //   content: content,
+    //   fontSize: int.parse(EnvVariables.receiptFontSize ?? "10"),
+    //   fontName: EnvVariables.receiptFontName ?? "Arial",
+    // );
   } catch (e) {
     throw Exception("Error sending ticket to printer at $destination: $e");
   }
