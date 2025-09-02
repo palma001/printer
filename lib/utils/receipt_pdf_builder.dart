@@ -10,6 +10,9 @@ class ReceiptPDFBuilder {
   pdfw.TextStyle textStyle = pdfw.TextStyle(
     font: pdfw.Font.courier(),
     fontSize: 8,
+    fontItalic: pdfw.Font.timesItalic(),
+    fontBold: pdfw.Font.courierBold(),
+    fontBoldItalic: pdfw.Font.timesBoldItalic(),
   );
 
   ReceiptPDFBuilder() {
@@ -366,6 +369,7 @@ class ReceiptPDFBuilder {
               ),
             ],
           ),
+          pdfw.SizedBox.square(dimension: 2),
           _Separator(),
           ...items.map((item) {
             return pdfw.Column(
@@ -594,10 +598,8 @@ class ReceiptPDFBuilder {
               _Text(
                 "Comprobante Autorizado",
                 style: pdfw.TextStyle(
-                  fontWeight: pdfw.FontWeight.bold,
-                  fontBold: pdfw.Font.courierBold(),
                   fontStyle: pdfw.FontStyle.italic,
-                  fontItalic: pdfw.Font.timesBoldItalic(),
+                  fontWeight: pdfw.FontWeight.bold,
                   fontSize: (textStyle.fontSize ?? 10) + 2,
                 ),
               ),
