@@ -408,7 +408,11 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
       ]);
 
   return builder.build(
-    pageFormat: printerSize > 58 ? PdfPageFormat.roll80 : PdfPageFormat.roll57,
+    pageFormat: PdfPageFormat(
+      printerSize * PdfPageFormat.mm,
+      double.infinity,
+      marginAll: 2 * PdfPageFormat.mm,
+    ),
     type:
         RegExp(
               "^comm",

@@ -49,7 +49,7 @@ class _ReceiptPDFDocument {
     pdfw.EdgeInsetsGeometry? margin,
   }) {
     document = pdfw.Document();
-    this.margin = margin ?? pdfw.EdgeInsets.fromLTRB(4.0, 4.0, 4.0, 4.0);
+    this.margin = margin ?? pdfw.EdgeInsets.fromLTRB(2.0, 2.0, 2.0, 2.0);
   }
 
   Future<Uint8List> build({List<pdfw.Widget> content = const []}) async {
@@ -209,7 +209,7 @@ class _ReceiptPDFDocument {
                   mainAxisAlignment: pdfw.MainAxisAlignment.end,
                   children: [
                     pdfw.Text(
-                      "Unidades",
+                      "Unid.",
                       style: tableTextStyle.copyWith(
                         fontWeight: pdfw.FontWeight.bold,
                         fontBold: pdfw.Font.courierBold(),
@@ -451,7 +451,7 @@ class _ReceiptPDFDocument {
                   style: totalStyle.copyWith(
                     fontWeight: pdfw.FontWeight.bold,
                     fontBold: pdfw.Font.courierBold(),
-                    fontSize: (totalStyle.fontSize ?? 10) + 2,
+                    fontSize: (totalStyle.fontSize ?? 10) + 1,
                   ),
                 ),
                 pdfw.Text(
@@ -459,7 +459,7 @@ class _ReceiptPDFDocument {
                   style: totalStyle.copyWith(
                     fontWeight: pdfw.FontWeight.bold,
                     fontBold: pdfw.Font.courierBold(),
-                    fontSize: (totalStyle.fontSize ?? 10) + 2,
+                    fontSize: (totalStyle.fontSize ?? 10) + 1,
                   ),
                 ),
               ],
@@ -514,7 +514,7 @@ class _ReceiptPDFDocument {
                   style: totalStyle.copyWith(
                     fontWeight: pdfw.FontWeight.bold,
                     fontBold: pdfw.Font.courierBold(),
-                    fontSize: (totalStyle.fontSize ?? 10) + 2,
+                    fontSize: (totalStyle.fontSize ?? 10) + 1,
                   ),
                 ),
                 pdfw.Text(
@@ -522,7 +522,7 @@ class _ReceiptPDFDocument {
                   style: totalStyle.copyWith(
                     fontWeight: pdfw.FontWeight.bold,
                     fontBold: pdfw.Font.courierBold(),
-                    fontSize: (totalStyle.fontSize ?? 10) + 2,
+                    fontSize: (totalStyle.fontSize ?? 10) + 1,
                   ),
                 ),
               ],
