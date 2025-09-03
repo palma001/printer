@@ -2,11 +2,12 @@ import "dart:convert";
 
 import "package:flutter/foundation.dart";
 import "package:intl/intl.dart";
+import "package:pdf/pdf.dart";
+import "package:pdf/widgets.dart" as pdfw;
 import "package:printer_ui_win/utils/receipt_pdf_builder.dart";
 import "package:printer_ui_win/utils/receipt_txt_builder.dart";
 import "package:printer_ui_win/utils/string_extension.dart";
 import "package:qr/qr.dart";
-import "package:windows_printer/windows_printer.dart";
 
 (QrImage, String) generate_afip_qr(
   dynamic data,
@@ -131,102 +132,6 @@ import "package:windows_printer/windows_printer.dart";
   return (receiptBuilder.build(), qrImage, qrString);
 }
 
-WPReceiptBuilder generateTicketReceipt(dynamic data, int printerSize) {
-  WPReceiptBuilder receiptBuilder = WPReceiptBuilder(
-    wpPaperSize: printerSize < 58 ? WPPaperSize.mm58 : WPPaperSize.mm80,
-  );
-
-  Map<String, dynamic> company = data["company"] ?? {};
-  Map<String, Map> fields = data["electronic_invoice"]?["fields"] ?? {};
-
-  // Encabezado
-  receiptBuilder.header(
-    [
-      "RAZON SOCIAL: ${company["name"]?.toString().toUpperCase()}",
-      "${data["client"]?["name"] ?? ""}",
-      "DIRECCION: ${company["address"] ?? ""}",
-      "C.U.I.T.: ${company["document_number"] ?? ""}",
-      "",
-      if (data["billing"] != null) "IIBB: ${fields["income_brut"] ?? "----"}",
-      if (data["billing"] != null)
-        "INICIO ACT: ${fields["activity_start_date"] ?? "----"}",
-      "",
-    ].join("\n"),
-  );
-  receiptBuilder.separator();
-
-  // Factura centrada
-  if (data["billing"] != null && fields["voucher_type"] != null) {
-    receiptBuilder.line(
-      fields["voucher_type"]?["Desc"]?.toString().toUpperCase() ?? "",
-    );
-    receiptBuilder.line("Código: ${fields["voucher_type"]?["Id"] ?? ""}");
-    receiptBuilder.separator();
-  }
-  // Datos de la factura
-  receiptBuilder.line("NRO: ${data["code"] ?? ""}");
-  receiptBuilder.line(
-    "CLIENTE: ${data["client"]?["name"] ?? "CONSUMIDOR FINAL"}",
-  );
-  receiptBuilder.line("FECHA: ${data["date"] ?? ""}");
-  receiptBuilder.line("HORA: ${data["hour"] ?? ""}");
-  Map seller = data["seller"] ?? {};
-  receiptBuilder.line("Vendedor: ${seller["name"] ?? ""}");
-  receiptBuilder.line("TIPO: ${data["invoice_type"]?["name"] ?? ""}");
-  if (data["billing"] != null) {
-    receiptBuilder.line("CONCEPTO: ${fields["concept_type"]?["Desc"] ?? ""}");
-  }
-  if (data["tables"] != null) {
-    for (var table in data["tables"]) {
-      receiptBuilder.line(
-        "MESA: ${table["name"] ?? ""} SALA ${table["living_room"]?["name"] ?? ""}",
-      );
-    }
-  }
-  receiptBuilder.separator();
-
-  // Detalle
-  receiptBuilder.item("Cant x P.Unit", "IMPORTE");
-  receiptBuilder.line("Descripcion");
-  receiptBuilder.separator();
-
-  for (var prod in data["products"] ?? []) {
-    var cantidad = double.parse("${prod["pivot"]?["amount"] ?? "0.0"}");
-    var precio = double.parse("${prod["pivot"]?["price"] ?? "0.0"}");
-    var subtotal = cantidad * precio;
-    var tax = double.parse("${prod["pivot"]?["taxe"] ?? "0.0"}");
-
-    receiptBuilder.item(
-      "${cantidad.toStringAsFixed(2)} x ${precio.toStringAsFixed(2)}",
-      subtotal.toStringAsFixed(2),
-    );
-    if (tax > 0.0 && data["billing"] != null) {
-      receiptBuilder.line("IVA $tax%");
-    }
-
-    receiptBuilder.line(prod["name"]?.toString().toUpperCase() ?? "");
-  }
-
-  receiptBuilder.separator();
-  receiptBuilder.totalAmt(
-    double.parse("${data['total'] ?? "0.0"}").toStringAsFixed(2),
-  );
-  receiptBuilder.separator();
-
-  // CAE y Vto
-  if (data["billing"] != null && fields["cae"] != null) {
-    receiptBuilder.line("CAE: ${fields["cae"] ?? ""}");
-    receiptBuilder.line("Vto: ${fields["caef_ch_vto"] ?? ""}");
-  }
-  if (data["billing"] != null) {
-    var (_, qrString) = generate_afip_qr(data, company, fields);
-    receiptBuilder.addQRCode(qrString);
-  }
-  receiptBuilder.blank(3);
-  receiptBuilder.cut(partial: false);
-  return receiptBuilder;
-}
-
 (String, QrImage?, String?) generateComandaText(dynamic data, int printerSize) {
   QrImage? qrImage;
   String? qrString;
@@ -307,6 +212,206 @@ WPReceiptBuilder generateTicketReceipt(dynamic data, int printerSize) {
 }
 
 Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
+  double fontSizeBase = 8;
   ReceiptPDFBuilder builder = ReceiptPDFBuilder();
-  return builder.build();
+  Map<String, dynamic> company = data["company"] ?? {};
+  Map<String, Map> fields = data["electronic_invoice"]?["fields"] ?? {};
+  Map<String, dynamic> vendedor = data["seller"] ?? {};
+  var (_, qrString) = generate_afip_qr(data, company, fields);
+  builder
+      .addInHeader([
+        ReceiptPDFBuilder.Line(
+          left: "Razón Social: ${company["name"]?.toString().toUpperCase()}",
+          align: pdfw.WrapAlignment.start,
+          style: pdfw.TextStyle(fontSize: fontSizeBase),
+        ),
+        ReceiptPDFBuilder.Line(
+          left: "${data["client"]?["name"] ?? ""}",
+          align: pdfw.WrapAlignment.start,
+          style: pdfw.TextStyle(fontSize: fontSizeBase),
+        ),
+        ReceiptPDFBuilder.Line(
+          left: "I.V.A: Resp Inscripto",
+          right: "C.U.I.T.: ${company["document_number"] ?? ""}",
+          align: pdfw.WrapAlignment.spaceBetween,
+          runAlignment: pdfw.WrapAlignment.center,
+          style: pdfw.TextStyle(fontSize: fontSizeBase),
+        ),
+        ...(data["billing"] != null
+            ? [
+                ReceiptPDFBuilder.Line(
+                  left: "IIBB: ${fields["income_brut"] ?? "----"}",
+                  right:
+                      "Inicio Act: ${fields["activity_start_date"] ?? "----"}",
+                  align: pdfw.WrapAlignment.spaceBetween,
+                  runAlignment: pdfw.WrapAlignment.center,
+                  style: pdfw.TextStyle(fontSize: fontSizeBase),
+                ),
+              ]
+            : []),
+        ReceiptPDFBuilder.Line(
+          left: "Dirección: ${company["address"] ?? ""}",
+          align: pdfw.WrapAlignment.start,
+          runAlignment: pdfw.WrapAlignment.center,
+          style: pdfw.TextStyle(fontSize: fontSizeBase),
+        ),
+      ], headerImgUrl: company["url"])
+      .addInCashierInfo(
+        [
+          ...(data["billing"] != null && fields["voucher_type"] != null
+              ? [
+                  ReceiptPDFBuilder.Line(
+                    left:
+                        fields["voucher_type"]?["Desc"]
+                            ?.toString()
+                            .toUpperCase() ??
+                        "",
+                    align: pdfw.WrapAlignment.start,
+                    runAlignment: pdfw.WrapAlignment.center,
+                    style: pdfw.TextStyle(fontSize: fontSizeBase),
+                  ),
+                  ReceiptPDFBuilder.Line(
+                    left: "Código: ${fields["voucher_type"]?["Id"] ?? ""}",
+                    align: pdfw.WrapAlignment.start,
+                    runAlignment: pdfw.WrapAlignment.center,
+                    style: pdfw.TextStyle(fontSize: fontSizeBase),
+                  ),
+                ]
+              : []),
+          ReceiptPDFBuilder.Line(
+            left: "No. ${data["code"] ?? ""}",
+            right: "Vendedor:  ${vendedor["name"] ?? ""}",
+            align: pdfw.WrapAlignment.spaceBetween,
+            style: pdfw.TextStyle(
+              fontWeight: pdfw.FontWeight.bold,
+              fontBold: pdfw.Font.courierBold(),
+              fontSize: fontSizeBase,
+            ),
+          ),
+          ReceiptPDFBuilder.Line(
+            left: "Cliente:  ${data["client"]?["name"] ?? "CONSUMIDOR FINAL"}",
+            align: pdfw.WrapAlignment.spaceBetween,
+            style: pdfw.TextStyle(
+              fontWeight: pdfw.FontWeight.bold,
+              fontBold: pdfw.Font.courierBold(),
+              fontSize: fontSizeBase,
+            ),
+          ),
+          ReceiptPDFBuilder.Line(
+            left: "Fecha: ${data["date"] ?? ""}",
+            right: "Hora:${data["hour"] ?? ""}",
+            align: pdfw.WrapAlignment.spaceBetween,
+            style: pdfw.TextStyle(
+              fontWeight: pdfw.FontWeight.bold,
+              fontBold: pdfw.Font.courierBold(),
+              fontSize: fontSizeBase,
+            ),
+          ),
+        ],
+        cod:
+            fields["voucher_type"]?["id"] ??
+            "${data["invoice_type"]?["id"] ?? ""}",
+        desc:
+            (fields["voucher_type"]?["Desc"] as String?)?.split(" ")[0] ??
+            "${data["invoice_type"]?["name"] ?? ""}",
+        type:
+            (fields["voucher_type"]?["Desc"] as String?)?.split(" ")[1] ??
+            "${data["invoice_type"]?["acronym_serie"] ?? ""}",
+      )
+      .addInClientInfo([
+        ...(data["billing"] != null
+            ? [
+                ReceiptPDFBuilder.Line(
+                  left: "Concepto: ${fields["concept_type"]?["Desc"] ?? ""}",
+                  style: pdfw.TextStyle(fontSize: fontSizeBase),
+                ),
+              ]
+            : []),
+        ...((data["tables"] as List<dynamic> ?? []).map(
+          (table) => ReceiptPDFBuilder.Line(
+            left:
+                "Mesa: ${table["name"] ?? ""} Sala ${table["living_room"]?["name"] ?? ""}",
+            style: pdfw.TextStyle(fontSize: fontSizeBase),
+          ),
+        )),
+        ReceiptPDFBuilder.Line(
+          left: "Direction: ${company["address"] ?? ""}",
+          align: pdfw.WrapAlignment.start,
+          style: pdfw.TextStyle(fontSize: fontSizeBase),
+        ),
+      ])
+      .addItems(
+        (data["products"] as List<dynamic>? ?? []).map((prod) {
+          var cantidad = double.parse("${prod["pivot"]?["amount"] ?? "0.0"}");
+          var precio = double.parse("${prod["pivot"]?["price"] ?? "0.0"}");
+          var subtotal = cantidad * precio;
+          return ReceiptPDFBuilder.Item(
+            description: prod["name"]?.toString().toUpperCase() ?? "",
+            units: double.parse("${prod["pivot"]?["amount"] ?? "0.0"}"),
+            unitPrice: double.parse("${prod["pivot"]?["price"] ?? "0.0"}"),
+            total: subtotal,
+          );
+        }).toList(),
+      )
+      .addTotal(
+        total: double.parse("${data['total'] ?? "0.0"}"),
+        totalNoDiscount: double.parse("${data['subtotal'] ?? "0.0"}"),
+      )
+      .addInFooterTop([
+        ReceiptPDFBuilder.Line(
+          left: "Regimen de transparencia fiscal consumidor (ley 27743)",
+          style: pdfw.TextStyle(
+            fontSize: fontSizeBase - 2,
+            fontStyle: pdfw.FontStyle.italic,
+          ),
+        ),
+        ReceiptPDFBuilder.Line(
+          left: "I.V.A. Contenido",
+          right: "\$ ${data["taxe_total"] ?? 0.0}",
+          align: pdfw.WrapAlignment.spaceEvenly,
+          style: pdfw.TextStyle(fontSize: fontSizeBase + 2),
+        ),
+        ...(data["billing"] != null && fields["cae"] != null
+            ? [
+                ReceiptPDFBuilder.Line(
+                  left: "CAE No ${fields["cae"] ?? ""}",
+                  style: pdfw.TextStyle(fontSize: fontSizeBase),
+                ),
+                ReceiptPDFBuilder.Line(
+                  left: "Vto: ${fields["caef_ch_vto"] ?? ""}",
+                  style: pdfw.TextStyle(fontSize: fontSizeBase),
+                ),
+              ]
+            : []),
+      ])
+      .addInFooterBottom([
+        ReceiptPDFBuilder.Line(
+          left: "Comprobante Autorizado",
+          style: pdfw.TextStyle(
+            fontWeight: pdfw.FontWeight.bold,
+            fontStyle: pdfw.FontStyle.italic,
+            fontSize: fontSizeBase + 2,
+          ),
+        ),
+        ReceiptPDFBuilder.Line(
+          left:
+              "Esta Administracion Federal no se responsabiliza por sus datos",
+          style: pdfw.TextStyle(fontStyle: pdfw.FontStyle.italic),
+        ),
+        ReceiptPDFBuilder.Line(
+          left: "Ingresado en el detalle dela operacion",
+          style: pdfw.TextStyle(
+            fontStyle: pdfw.FontStyle.italic,
+            fontSize: fontSizeBase - 2,
+          ),
+        ),
+      ]);
+
+  return builder.build(
+    pageFormat: printerSize > 58 ? PdfPageFormat.roll80 : PdfPageFormat.roll57,
+    type: (data["type"] as String?)?.allMatches("comm").isNotEmpty == true
+        ? ReceiptType.command
+        : ReceiptType.receipt,
+    qrCodeData: qrString,
+  );
 }

@@ -1,19 +1,16 @@
-import "package:windows_printer/windows_printer.dart";
+import "package:printing/printing.dart" as prnt;
+
 import "../models/printer.dart";
 
 Future<List<Printer>> getPrinters() async {
   try {
-    final printers = await WindowsPrinter.getAvailablePrinters()
+    final printers = await prnt.Printing.listPrinters()
         .asStream()
-        .asyncExpand(
-          (printerStrings) => Stream.fromFutures(
-            printerStrings.map(WindowsPrinter.getPrinterProperties),
-          ),
-        )
+        .asyncExpand((printerStrings) => Stream.fromIterable(printerStrings))
         .map(
           (printerProps) => Printer(
-            name: printerProps["name"],
-            identifier: printerProps["name"],
+            name: printerProps.name,
+            identifier: printerProps.name,
             type: "local",
           ),
         )

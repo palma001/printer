@@ -10,9 +10,6 @@ Future<void> printTicket(
   dynamic data,
   int printerSize,
 ) async {
-  // var (content, _, _) = (data["type"] ?? "").toLowerCase() == "command"
-  //     ? generateComandaText(data, printerSize)
-  //     : generateTicketText(data, printerSize);
   Uint8List contentPDF = await generatePDFReceipt(data, printerSize);
   Printer printer = await Printing.listPrinters()
       .asStream()
@@ -26,12 +23,6 @@ Future<void> printTicket(
       printer: printer,
       onLayout: (_) => contentPDF,
     );
-    // await WindowsPrinter.printRichTextDocument(
-    //   printerName: destination,
-    //   content: content,
-    //   fontSize: int.parse(EnvVariables.receiptFontSize ?? "10"),
-    //   fontName: EnvVariables.receiptFontName ?? "Arial",
-    // );
   } catch (e) {
     throw Exception("Error sending ticket to printer at $destination: $e");
   }
@@ -44,8 +35,8 @@ Future<void> printNetworkTicket(
 ) async {
   try {
     // 1. Build the receipt data using the same logic as local printing.
-    var receipt = generateTicketReceipt(data, printerSize);
-    Uint8List receiptUintList = Uint8List.fromList(receipt.build());
+    var receipt = await generatePDFReceipt(data, printerSize);
+    Uint8List receiptUintList = Uint8List.fromList(receipt);
 
     // 2. Connect to the network printer via raw TCP socket on port 9100.
     final socket = await Socket.connect(
