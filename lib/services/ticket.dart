@@ -409,7 +409,12 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
 
   return builder.build(
     pageFormat: printerSize > 58 ? PdfPageFormat.roll80 : PdfPageFormat.roll57,
-    type: (data["type"] as String?)?.allMatches("comm").isNotEmpty == true
+    type:
+        RegExp(
+              "^comm",
+              caseSensitive: false,
+            ).allMatches(data["type"] ?? "ticket").isNotEmpty ==
+            true
         ? ReceiptType.command
         : ReceiptType.receipt,
     qrCodeData: qrString,
