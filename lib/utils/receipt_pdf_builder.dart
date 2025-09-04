@@ -22,13 +22,7 @@ class _Line {
   String right;
   pdfw.WrapAlignment align;
   pdfw.WrapAlignment runAlignment;
-  pdfw.TextStyle textStyle = pdfw.TextStyle(
-    font: pdfw.Font.courier(),
-    fontSize: double.parse(EnvVariables.receiptFontSize ?? "8"),
-    fontItalic: pdfw.Font.timesBoldItalic(),
-    fontBold: pdfw.Font.courierBold(),
-    fontBoldItalic: pdfw.Font.timesBoldItalic(),
-  );
+  pdfw.TextStyle textStyle = pdfw.TextStyle();
   _Line({
     this.right = "",
     this.left = "",
@@ -54,11 +48,21 @@ class _ReceiptPDFDocument {
   }
 
   Future<Uint8List> build({List<pdfw.Widget> content = const []}) async {
-    // pdfw.ImageProvider headerLogo = await networkImage("");
+    pdfw.Font fontBold = await PdfGoogleFonts.robotoMonoBold();
+    pdfw.Font fontBase = await PdfGoogleFonts.robotoMonoRegular();
     document.addPage(
       pdfw.Page(
         pageFormat: pageFormat,
         margin: margin,
+        theme: pdfw.ThemeData(
+          defaultTextStyle: pdfw.TextStyle(
+            font: fontBase,
+            fontBold: fontBold,
+            fontBoldItalic: pdfw.Font.timesBoldItalic(),
+            fontItalic: pdfw.Font.timesBoldItalic(),
+            fontSize: double.parse(EnvVariables.receiptFontSize ?? "8"),
+          ),
+        ),
         build: (pdfw.Context context) {
           return pdfw.Column(children: content);
         },

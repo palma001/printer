@@ -5,7 +5,6 @@ import "package:flutter/foundation.dart";
 import "package:intl/intl.dart";
 import "package:pdf/pdf.dart";
 import "package:pdf/widgets.dart" as pdfw;
-import "package:printer_ui_win/constants/env.dart";
 import "package:printer_ui_win/utils/receipt_pdf_builder.dart";
 import "package:printer_ui_win/utils/receipt_txt_builder.dart";
 import "package:printer_ui_win/utils/string_extension.dart";
@@ -40,7 +39,6 @@ import "package:qr/qr.dart";
 }
 
 Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
-  double fontSizeBase = double.parse(EnvVariables.receiptFontSize ?? "8");
   ReceiptPDFBuilder builder = ReceiptPDFBuilder();
   Map<String, dynamic> company = data["company"] ?? {};
   Map<String, dynamic>? electronicInvoice = data["electronic_invoice"];
@@ -52,19 +50,16 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
         ReceiptPDFBuilder.Line(
           left: "${company["name"]?.toString().toUpperCase()}",
           align: pdfw.WrapAlignment.center,
-          style: pdfw.TextStyle(fontSize: fontSizeBase),
         ),
         ReceiptPDFBuilder.Line(
           left: "${data["client"]?["name"] ?? ""}",
           align: pdfw.WrapAlignment.start,
-          style: pdfw.TextStyle(fontSize: fontSizeBase),
         ),
         ReceiptPDFBuilder.Line(
           left: "I.V.A: Resp Inscripto",
           right: "C.U.I.T.: ${company["document_number"] ?? ""}",
           align: pdfw.WrapAlignment.spaceBetween,
           runAlignment: pdfw.WrapAlignment.center,
-          style: pdfw.TextStyle(fontSize: fontSizeBase),
         ),
         ...(data["billing"] != null
             ? [
@@ -75,7 +70,6 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
                       : "",
                   align: pdfw.WrapAlignment.spaceBetween,
                   runAlignment: pdfw.WrapAlignment.center,
-                  style: pdfw.TextStyle(fontSize: fontSizeBase),
                 ),
               ]
             : []),
@@ -83,7 +77,6 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
           left: "Dirección: ${company["address"] ?? ""}",
           align: pdfw.WrapAlignment.start,
           runAlignment: pdfw.WrapAlignment.center,
-          style: pdfw.TextStyle(fontSize: fontSizeBase),
         ),
       ], headerImgUrl: company["url"])
       .addInCashierInfo(
@@ -98,13 +91,11 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
                         "",
                     align: pdfw.WrapAlignment.start,
                     runAlignment: pdfw.WrapAlignment.center,
-                    style: pdfw.TextStyle(fontSize: fontSizeBase),
                   ),
                   ReceiptPDFBuilder.Line(
                     left: "Código: ${fields["voucher_type"]?["Id"] ?? ""}",
                     align: pdfw.WrapAlignment.start,
                     runAlignment: pdfw.WrapAlignment.center,
-                    style: pdfw.TextStyle(fontSize: fontSizeBase),
                   ),
                 ]
               : []),
@@ -112,28 +103,19 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
             left: "No. ${data["code"] ?? ""}",
             right: "Vendedor:  ${vendedor["name"] ?? ""}",
             align: pdfw.WrapAlignment.spaceBetween,
-            style: pdfw.TextStyle(
-              fontWeight: pdfw.FontWeight.bold,
-              fontSize: fontSizeBase,
-            ),
+            style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
           ),
           ReceiptPDFBuilder.Line(
             left: "Cliente:  ${data["client"]?["name"] ?? "CONSUMIDOR FINAL"}",
             align: pdfw.WrapAlignment.spaceBetween,
-            style: pdfw.TextStyle(
-              fontWeight: pdfw.FontWeight.bold,
-              fontSize: fontSizeBase,
-            ),
+            style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
           ),
           ReceiptPDFBuilder.Line(
             left:
                 "Fecha: ${formatDate(DateTime.parse(data["date"]), [dd, "/", mm, "/", yyyy])}",
             right: "Hora:${data["hour"] ?? ""}",
             align: pdfw.WrapAlignment.spaceBetween,
-            style: pdfw.TextStyle(
-              fontWeight: pdfw.FontWeight.bold,
-              fontSize: fontSizeBase,
-            ),
+            style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
           ),
         ],
         cod:
@@ -151,7 +133,6 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
             ? [
                 ReceiptPDFBuilder.Line(
                   left: "Concepto: ${fields["concept_type"]?["Desc"] ?? ""}",
-                  style: pdfw.TextStyle(fontSize: fontSizeBase),
                 ),
               ]
             : []),
@@ -159,13 +140,11 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
           (table) => ReceiptPDFBuilder.Line(
             left:
                 "Mesa: ${table["name"] ?? ""} Sala ${table["living_room"]?["name"] ?? ""}",
-            style: pdfw.TextStyle(fontSize: fontSizeBase),
           ),
         )),
         ReceiptPDFBuilder.Line(
           left: "Direction: ${company["address"] ?? ""}",
           align: pdfw.WrapAlignment.start,
-          style: pdfw.TextStyle(fontSize: fontSizeBase),
         ),
       ])
       .addItems(
@@ -188,26 +167,18 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
       .addInFooterTop([
         ReceiptPDFBuilder.Line(
           left: "Regimen de transparencia fiscal consumidor (ley 27743)",
-          style: pdfw.TextStyle(
-            fontSize: fontSizeBase - 1,
-            fontStyle: pdfw.FontStyle.italic,
-          ),
+          style: pdfw.TextStyle(fontStyle: pdfw.FontStyle.italic),
         ),
         ReceiptPDFBuilder.Line(
           left: "I.V.A. Contenido",
           right: "\$ ${data["taxe_total"] ?? 0.0}",
           align: pdfw.WrapAlignment.spaceEvenly,
-          style: pdfw.TextStyle(fontSize: fontSizeBase + 2),
         ),
         ...(data["billing"] != null && fields["cae"] != null
             ? [
-                ReceiptPDFBuilder.Line(
-                  left: "CAE No ${fields["cae"] ?? ""}",
-                  style: pdfw.TextStyle(fontSize: fontSizeBase),
-                ),
+                ReceiptPDFBuilder.Line(left: "CAE No ${fields["cae"] ?? ""}"),
                 ReceiptPDFBuilder.Line(
                   left: "Vto: ${fields["caef_ch_vto"] ?? ""}",
-                  style: pdfw.TextStyle(fontSize: fontSizeBase),
                 ),
               ]
             : []),
@@ -218,7 +189,6 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
           style: pdfw.TextStyle(
             fontWeight: pdfw.FontWeight.bold,
             fontStyle: pdfw.FontStyle.italic,
-            fontSize: fontSizeBase + 2,
           ),
         ),
         ReceiptPDFBuilder.Line(
@@ -228,10 +198,7 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
         ),
         ReceiptPDFBuilder.Line(
           left: "Ingresado en el detalle dela operacion",
-          style: pdfw.TextStyle(
-            fontStyle: pdfw.FontStyle.italic,
-            fontSize: fontSizeBase - 1,
-          ),
+          style: pdfw.TextStyle(fontStyle: pdfw.FontStyle.italic),
         ),
       ]);
 
