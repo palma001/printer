@@ -4,6 +4,7 @@ import "dart:convert";
 import "package:printer_ui_win/constants/env.dart";
 import "package:printer_ui_win/models/printer.dart";
 import "package:printer_ui_win/services/printer.dart";
+import "package:printer_ui_win/store/error_store.dart";
 import "package:web_socket_channel/web_socket_channel.dart";
 
 String buildPusherWsUrl() {
@@ -52,6 +53,13 @@ Future<void> handlePusherMessage(
       }
     }
   } catch (e) {
+    ErrorStore.instance.update(
+      SysNotification(
+        show: true,
+        title: "An Error occur",
+        message: e.toString(),
+      ),
+    );
     throw Exception("Failed to process message: $e");
   }
 }
