@@ -4,6 +4,7 @@ import "package:flutter/foundation.dart";
 import "package:intl/intl.dart";
 import "package:pdf/pdf.dart";
 import "package:pdf/widgets.dart" as pdfw;
+import "package:printer_ui_win/constants/env.dart";
 import "package:printer_ui_win/utils/receipt_pdf_builder.dart";
 import "package:printer_ui_win/utils/receipt_txt_builder.dart";
 import "package:printer_ui_win/utils/string_extension.dart";
@@ -212,17 +213,18 @@ import "package:qr/qr.dart";
 }
 
 Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
-  double fontSizeBase = 8;
+  double fontSizeBase = double.parse(EnvVariables.receiptFontSize ?? "8");
   ReceiptPDFBuilder builder = ReceiptPDFBuilder();
   Map<String, dynamic> company = data["company"] ?? {};
+  Map<String, dynamic>? electronicInvoice = data["electronic_invoice"];
   Map<String, Map> fields = data["electronic_invoice"]?["fields"] ?? {};
   Map<String, dynamic> vendedor = data["seller"] ?? {};
   var (_, qrString) = generate_afip_qr(data, company, fields);
   builder
       .addInHeader([
         ReceiptPDFBuilder.Line(
-          left: "Razón Social: ${company["name"]?.toString().toUpperCase()}",
-          align: pdfw.WrapAlignment.start,
+          left: "${company["name"]?.toString().toUpperCase()}",
+          align: pdfw.WrapAlignment.center,
           style: pdfw.TextStyle(fontSize: fontSizeBase),
         ),
         ReceiptPDFBuilder.Line(
@@ -240,9 +242,10 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
         ...(data["billing"] != null
             ? [
                 ReceiptPDFBuilder.Line(
-                  left: "IIBB: ${fields["income_brut"] ?? "----"}",
-                  right:
-                      "Inicio Act: ${fields["activity_start_date"] ?? "----"}",
+                  left: "IIBB: ${company["document_number"] ?? "----"}",
+                  right: fields["activity_start_date"] != null
+                      ? "In. Act: ${fields["activity_start_date"] ?? "----"}"
+                      : "",
                   align: pdfw.WrapAlignment.spaceBetween,
                   runAlignment: pdfw.WrapAlignment.center,
                   style: pdfw.TextStyle(fontSize: fontSizeBase),
@@ -284,7 +287,6 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
             align: pdfw.WrapAlignment.spaceBetween,
             style: pdfw.TextStyle(
               fontWeight: pdfw.FontWeight.bold,
-              fontBold: pdfw.Font.courierBold(),
               fontSize: fontSizeBase,
             ),
           ),
@@ -293,7 +295,6 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
             align: pdfw.WrapAlignment.spaceBetween,
             style: pdfw.TextStyle(
               fontWeight: pdfw.FontWeight.bold,
-              fontBold: pdfw.Font.courierBold(),
               fontSize: fontSizeBase,
             ),
           ),
@@ -303,7 +304,6 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
             align: pdfw.WrapAlignment.spaceBetween,
             style: pdfw.TextStyle(
               fontWeight: pdfw.FontWeight.bold,
-              fontBold: pdfw.Font.courierBold(),
               fontSize: fontSizeBase,
             ),
           ),
@@ -361,7 +361,7 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
         ReceiptPDFBuilder.Line(
           left: "Regimen de transparencia fiscal consumidor (ley 27743)",
           style: pdfw.TextStyle(
-            fontSize: fontSizeBase - 2,
+            fontSize: fontSizeBase - 1,
             fontStyle: pdfw.FontStyle.italic,
           ),
         ),
@@ -402,7 +402,7 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
           left: "Ingresado en el detalle dela operacion",
           style: pdfw.TextStyle(
             fontStyle: pdfw.FontStyle.italic,
-            fontSize: fontSizeBase - 2,
+            fontSize: fontSizeBase - 1,
           ),
         ),
       ]);
@@ -421,6 +421,6 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
             true
         ? ReceiptType.command
         : ReceiptType.receipt,
-    qrCodeData: qrString,
+    qrCodeData: electronicInvoice == null ? null : qrString,
   );
 }

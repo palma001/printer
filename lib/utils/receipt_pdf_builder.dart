@@ -1,6 +1,7 @@
 import "package:flutter/services.dart";
 import "package:pdf/pdf.dart";
 import "package:pdf/widgets.dart" as pdfw;
+import "package:printer_ui_win/constants/env.dart";
 import "package:printing/printing.dart";
 
 class _Item {
@@ -23,8 +24,8 @@ class _Line {
   pdfw.WrapAlignment runAlignment;
   pdfw.TextStyle textStyle = pdfw.TextStyle(
     font: pdfw.Font.courier(),
-    fontSize: 8,
-    fontItalic: pdfw.Font.timesItalic(),
+    fontSize: double.parse(EnvVariables.receiptFontSize ?? "8"),
+    fontItalic: pdfw.Font.timesBoldItalic(),
     fontBold: pdfw.Font.courierBold(),
     fontBoldItalic: pdfw.Font.timesBoldItalic(),
   );
@@ -212,7 +213,6 @@ class _ReceiptPDFDocument {
                       "Unid.",
                       style: tableTextStyle.copyWith(
                         fontWeight: pdfw.FontWeight.bold,
-                        fontBold: pdfw.Font.courierBold(),
                       ),
                     ),
                   ],
@@ -227,7 +227,6 @@ class _ReceiptPDFDocument {
                       "\$ x Unid",
                       style: tableTextStyle.copyWith(
                         fontWeight: pdfw.FontWeight.bold,
-                        fontBold: pdfw.Font.courierBold(),
                       ),
                     ),
                   ],
@@ -447,7 +446,7 @@ class _ReceiptPDFDocument {
               runAlignment: pdfw.WrapAlignment.center,
               children: [
                 pdfw.Text(
-                  "Importe Total:",
+                  "Imp. Total:",
                   style: totalStyle.copyWith(
                     fontWeight: pdfw.FontWeight.bold,
                     fontBold: pdfw.Font.courierBold(),
@@ -472,7 +471,7 @@ class _ReceiptPDFDocument {
                   alignment: pdfw.WrapAlignment.center,
                   children: [
                     pdfw.Text(
-                      "Total Sin Descuento \$ $totalNoDiscount",
+                      "Total Sin Desc. \$ $totalNoDiscount",
                       style: totalStyle.copyWith(
                         fontWeight: pdfw.FontWeight.bold,
                         fontBold: pdfw.Font.courierBold(),
@@ -536,8 +535,8 @@ class _ReceiptPDFDocument {
   static pdfw.Widget TaxInformation({
     List<_Line> fiscal = const [],
     List<_Line> bottom = const [],
-    required Uint8List imageBytes,
-    required String qrCodeData,
+    Uint8List? imageBytes,
+    String? qrCodeData,
   }) {
     pdfw.TextStyle taxInformationStyle = _Line().textStyle;
     return pdfw.Container(
@@ -560,34 +559,36 @@ class _ReceiptPDFDocument {
                 [],
                 (previousValue, element) => [...previousValue, ...element],
               ),
-          pdfw.Row(
-            mainAxisAlignment: pdfw.MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: pdfw.CrossAxisAlignment.end,
-            children: [
-              pdfw.Expanded(
-                flex: 6,
-                child: pdfw.AspectRatio(
-                  aspectRatio: 1 / 1,
-                  child: pdfw.Container(
-                    margin: pdfw.EdgeInsets.only(right: 4),
-                    child: pdfw.BarcodeWidget(
-                      data: qrCodeData,
-                      barcode: pdfw.Barcode.qrCode(),
-                      height: 100,
+          ?imageBytes == null || qrCodeData == null
+              ? null
+              : pdfw.Row(
+                  mainAxisAlignment: pdfw.MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: pdfw.CrossAxisAlignment.end,
+                  children: [
+                    pdfw.Expanded(
+                      flex: 6,
+                      child: pdfw.AspectRatio(
+                        aspectRatio: 1 / 1,
+                        child: pdfw.Container(
+                          margin: pdfw.EdgeInsets.only(right: 4),
+                          child: pdfw.BarcodeWidget(
+                            data: qrCodeData,
+                            barcode: pdfw.Barcode.qrCode(),
+                            height: 100,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    pdfw.Expanded(
+                      flex: 5,
+                      child: pdfw.Container(
+                        height: 100,
+                        padding: pdfw.EdgeInsets.only(bottom: 16),
+                        child: pdfw.Image(pdfw.MemoryImage(imageBytes)),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              pdfw.Expanded(
-                flex: 5,
-                child: pdfw.Container(
-                  height: 100,
-                  padding: pdfw.EdgeInsets.only(bottom: 16),
-                  child: pdfw.Image(pdfw.MemoryImage(imageBytes)),
-                ),
-              ),
-            ],
-          ),
           pdfw.SizedBox.square(
             dimension: ((taxInformationStyle.fontSize ?? 10) / 2),
           ),
@@ -722,13 +723,15 @@ class ReceiptPDFBuilder {
   Future<Uint8List> build({
     PdfPageFormat pageFormat = PdfPageFormat.roll80,
     ReceiptType type = ReceiptType.receipt,
-    String qrCodeData = "",
+    String? qrCodeData = "",
   }) async {
     _ReceiptPDFDocument document = _ReceiptPDFDocument(pageFormat: pageFormat);
     pdfw.ImageProvider? headerImage = _headerLines.$2 == null
         ? null
         : await networkImage(_headerLines.$2!);
-    ByteData imgData = await rootBundle.load("assets/images/arca.png");
+    ByteData? imgData = qrCodeData == null
+        ? null
+        : await rootBundle.load("assets/images/arca.png");
     return document.build(
       content: [
         _ReceiptPDFDocument.Header(_headerLines.$1, headerLogo: headerImage),
@@ -758,7 +761,7 @@ class ReceiptPDFBuilder {
         _ReceiptPDFDocument.TaxInformation(
           fiscal: _footer_top,
           bottom: _footer_bottom,
-          imageBytes: imgData.buffer.asUint8List(),
+          imageBytes: imgData?.buffer.asUint8List(),
           qrCodeData: qrCodeData,
         ),
       ],
