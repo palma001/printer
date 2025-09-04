@@ -48,8 +48,8 @@ class _ReceiptPDFDocument {
   }
 
   Future<Uint8List> build({List<pdfw.Widget> content = const []}) async {
-    pdfw.Font fontBold = await PdfGoogleFonts.robotoMonoBold();
-    pdfw.Font fontBase = await PdfGoogleFonts.robotoMonoRegular();
+    pdfw.Font fontBold = await PdfGoogleFonts.robotoBold();
+    pdfw.Font fontBase = await PdfGoogleFonts.robotoRegular();
     document.addPage(
       pdfw.Page(
         pageFormat: pageFormat,
@@ -152,7 +152,6 @@ class _ReceiptPDFDocument {
                     desc,
                     style: texBaseStyle.copyWith(
                       fontWeight: pdfw.FontWeight.bold,
-                      fontBold: pdfw.Font.courierBold(),
                     ),
                   ),
                   pdfw.Text("COD $cod", style: texBaseStyle),
@@ -171,7 +170,6 @@ class _ReceiptPDFDocument {
                   type,
                   style: texBaseStyle.copyWith(
                     fontWeight: pdfw.FontWeight.bold,
-                    fontBold: pdfw.Font.courierBold(),
                   ),
                 ),
               ),
@@ -228,7 +226,7 @@ class _ReceiptPDFDocument {
                   mainAxisAlignment: pdfw.MainAxisAlignment.end,
                   children: [
                     pdfw.Text(
-                      "\$ x Unid",
+                      "\$xUnid",
                       style: tableTextStyle.copyWith(
                         fontWeight: pdfw.FontWeight.bold,
                       ),
@@ -242,10 +240,9 @@ class _ReceiptPDFDocument {
                   mainAxisAlignment: pdfw.MainAxisAlignment.end,
                   children: [
                     pdfw.Text(
-                      "\$ Total",
+                      "\$Total",
                       style: tableTextStyle.copyWith(
                         fontWeight: pdfw.FontWeight.bold,
-                        fontBold: pdfw.Font.courierBold(),
                       ),
                     ),
                   ],
@@ -293,7 +290,6 @@ class _ReceiptPDFDocument {
                             item.units.toString(),
                             style: tableTextStyle.copyWith(
                               fontWeight: pdfw.FontWeight.bold,
-                              fontBold: pdfw.Font.courierBold(),
                             ),
                           ),
                         ],
@@ -305,10 +301,9 @@ class _ReceiptPDFDocument {
                         mainAxisAlignment: pdfw.MainAxisAlignment.end,
                         children: [
                           pdfw.Text(
-                            "\$ ${item.unitPrice.toString()}",
+                            "\$${item.unitPrice.toString()}",
                             style: tableTextStyle.copyWith(
                               fontWeight: pdfw.FontWeight.bold,
-                              fontBold: pdfw.Font.courierBold(),
                             ),
                           ),
                         ],
@@ -320,10 +315,9 @@ class _ReceiptPDFDocument {
                         mainAxisAlignment: pdfw.MainAxisAlignment.end,
                         children: [
                           pdfw.Text(
-                            "\$ ${item.total.toString()}",
+                            "\$${item.total.toString()}",
                             style: tableTextStyle.copyWith(
                               fontWeight: pdfw.FontWeight.bold,
-                              fontBold: pdfw.Font.courierBold(),
                             ),
                           ),
                         ],
@@ -364,7 +358,6 @@ class _ReceiptPDFDocument {
                       "Unidades",
                       style: tableTextStyle.copyWith(
                         fontWeight: pdfw.FontWeight.bold,
-                        fontBold: pdfw.Font.courierBold(),
                       ),
                     ),
                   ],
@@ -412,7 +405,6 @@ class _ReceiptPDFDocument {
                             item.units.toString(),
                             style: tableTextStyle.copyWith(
                               fontWeight: pdfw.FontWeight.bold,
-                              fontBold: pdfw.Font.courierBold(),
                             ),
                           ),
                         ],
@@ -447,22 +439,21 @@ class _ReceiptPDFDocument {
             child: pdfw.Wrap(
               direction: pdfw.Axis.horizontal,
               alignment: pdfw.WrapAlignment.spaceBetween,
+              spacing: 4,
               runAlignment: pdfw.WrapAlignment.center,
               children: [
                 pdfw.Text(
                   "Imp. Total:",
                   style: totalStyle.copyWith(
                     fontWeight: pdfw.FontWeight.bold,
-                    fontBold: pdfw.Font.courierBold(),
-                    fontSize: (totalStyle.fontSize ?? 10) + 1,
+                    fontSize: (totalStyle.fontSize ?? 8) + 1,
                   ),
                 ),
                 pdfw.Text(
-                  "\$ $total",
+                  "\$$total",
                   style: totalStyle.copyWith(
                     fontWeight: pdfw.FontWeight.bold,
-                    fontBold: pdfw.Font.courierBold(),
-                    fontSize: (totalStyle.fontSize ?? 10) + 1,
+                    fontSize: (totalStyle.fontSize ?? 8) + 1,
                   ),
                 ),
               ],
@@ -475,10 +466,9 @@ class _ReceiptPDFDocument {
                   alignment: pdfw.WrapAlignment.center,
                   children: [
                     pdfw.Text(
-                      "Total Sin Desc. \$ $totalNoDiscount",
+                      "Total Sin Desc. \$$totalNoDiscount",
                       style: totalStyle.copyWith(
                         fontWeight: pdfw.FontWeight.bold,
-                        fontBold: pdfw.Font.courierBold(),
                       ),
                     ),
                   ],
@@ -516,7 +506,6 @@ class _ReceiptPDFDocument {
                   "Total:",
                   style: totalStyle.copyWith(
                     fontWeight: pdfw.FontWeight.bold,
-                    fontBold: pdfw.Font.courierBold(),
                     fontSize: (totalStyle.fontSize ?? 10) + 1,
                   ),
                 ),
@@ -524,7 +513,6 @@ class _ReceiptPDFDocument {
                   "$total",
                   style: totalStyle.copyWith(
                     fontWeight: pdfw.FontWeight.bold,
-                    fontBold: pdfw.Font.courierBold(),
                     fontSize: (totalStyle.fontSize ?? 10) + 1,
                   ),
                 ),

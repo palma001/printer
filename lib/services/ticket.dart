@@ -171,7 +171,7 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
         ),
         ReceiptPDFBuilder.Line(
           left: "I.V.A. Contenido",
-          right: "\$ ${data["taxe_total"] ?? 0.0}",
+          right: "\$${data["taxe_total"] ?? 0.0}",
           align: pdfw.WrapAlignment.spaceEvenly,
         ),
         ...(data["billing"] != null && fields["cae"] != null
