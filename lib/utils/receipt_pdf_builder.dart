@@ -137,7 +137,6 @@ class _ReceiptPDFDocument {
     String type = "",
     String cod = "",
   }) {
-    pdfw.TextStyle texBaseStyle = _Line().textStyle;
     return pdfw.Container(
       margin: pdfw.EdgeInsets.only(top: 2, bottom: 2),
       child: pdfw.Column(
@@ -150,11 +149,9 @@ class _ReceiptPDFDocument {
                 children: [
                   pdfw.Text(
                     desc,
-                    style: texBaseStyle.copyWith(
-                      fontWeight: pdfw.FontWeight.bold,
-                    ),
+                    style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
                   ),
-                  pdfw.Text("COD $cod", style: texBaseStyle),
+                  pdfw.Text("COD $cod"),
                 ],
               ),
               pdfw.SizedBox(width: 8),
@@ -168,9 +165,7 @@ class _ReceiptPDFDocument {
                 padding: pdfw.EdgeInsets.all(4),
                 child: pdfw.Text(
                   type,
-                  style: texBaseStyle.copyWith(
-                    fontWeight: pdfw.FontWeight.bold,
-                  ),
+                  style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
                 ),
               ),
             ],
@@ -191,7 +186,6 @@ class _ReceiptPDFDocument {
   }
 
   static pdfw.Widget Items([List<_Item> items = const []]) {
-    pdfw.TextStyle tableTextStyle = _Line().textStyle;
     return pdfw.Container(
       margin: pdfw.EdgeInsets.only(top: 2, bottom: 2),
       child: pdfw.Column(
@@ -213,9 +207,7 @@ class _ReceiptPDFDocument {
                   children: [
                     pdfw.Text(
                       "Unid.",
-                      style: tableTextStyle.copyWith(
-                        fontWeight: pdfw.FontWeight.bold,
-                      ),
+                      style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
                     ),
                   ],
                 ),
@@ -227,9 +219,7 @@ class _ReceiptPDFDocument {
                   children: [
                     pdfw.Text(
                       "\$xUnid",
-                      style: tableTextStyle.copyWith(
-                        fontWeight: pdfw.FontWeight.bold,
-                      ),
+                      style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
                     ),
                   ],
                 ),
@@ -241,9 +231,7 @@ class _ReceiptPDFDocument {
                   children: [
                     pdfw.Text(
                       "\$Total",
-                      style: tableTextStyle.copyWith(
-                        fontWeight: pdfw.FontWeight.bold,
-                      ),
+                      style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
                     ),
                   ],
                 ),
@@ -263,9 +251,7 @@ class _ReceiptPDFDocument {
                       child: pdfw.Wrap(
                         direction: pdfw.Axis.horizontal,
                         alignment: pdfw.WrapAlignment.start,
-                        children: [
-                          pdfw.Text(item.description, style: tableTextStyle),
-                        ],
+                        children: [pdfw.Text(item.description)],
                       ),
                     ),
                     pdfw.Expanded(flex: 1, child: pdfw.Container()),
@@ -288,7 +274,7 @@ class _ReceiptPDFDocument {
                         children: [
                           pdfw.Text(
                             item.units.toString(),
-                            style: tableTextStyle.copyWith(
+                            style: pdfw.TextStyle(
                               fontWeight: pdfw.FontWeight.bold,
                             ),
                           ),
@@ -302,7 +288,7 @@ class _ReceiptPDFDocument {
                         children: [
                           pdfw.Text(
                             "\$${item.unitPrice.toString()}",
-                            style: tableTextStyle.copyWith(
+                            style: pdfw.TextStyle(
                               fontWeight: pdfw.FontWeight.bold,
                             ),
                           ),
@@ -316,7 +302,7 @@ class _ReceiptPDFDocument {
                         children: [
                           pdfw.Text(
                             "\$${item.total.toString()}",
-                            style: tableTextStyle.copyWith(
+                            style: pdfw.TextStyle(
                               fontWeight: pdfw.FontWeight.bold,
                             ),
                           ),
@@ -334,7 +320,6 @@ class _ReceiptPDFDocument {
   }
 
   static pdfw.Widget CommandaItems([List<_Item> items = const []]) {
-    pdfw.TextStyle tableTextStyle = _Line().textStyle;
     return pdfw.Container(
       margin: pdfw.EdgeInsets.only(top: 2, bottom: 2),
       child: pdfw.Column(
@@ -356,9 +341,7 @@ class _ReceiptPDFDocument {
                   children: [
                     pdfw.Text(
                       "Unidades",
-                      style: tableTextStyle.copyWith(
-                        fontWeight: pdfw.FontWeight.bold,
-                      ),
+                      style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
                     ),
                   ],
                 ),
@@ -378,9 +361,7 @@ class _ReceiptPDFDocument {
                       child: pdfw.Wrap(
                         direction: pdfw.Axis.horizontal,
                         alignment: pdfw.WrapAlignment.start,
-                        children: [
-                          pdfw.Text(item.description, style: tableTextStyle),
-                        ],
+                        children: [pdfw.Text(item.description)],
                       ),
                     ),
                     pdfw.Expanded(flex: 1, child: pdfw.Container()),
@@ -403,7 +384,7 @@ class _ReceiptPDFDocument {
                         children: [
                           pdfw.Text(
                             item.units.toString(),
-                            style: tableTextStyle.copyWith(
+                            style: pdfw.TextStyle(
                               fontWeight: pdfw.FontWeight.bold,
                             ),
                           ),
@@ -421,7 +402,6 @@ class _ReceiptPDFDocument {
   }
 
   static pdfw.Widget Total({double total = 0, double? totalNoDiscount}) {
-    pdfw.TextStyle totalStyle = _Line().textStyle;
     return pdfw.Container(
       margin: pdfw.EdgeInsets.only(top: 16),
       child: pdfw.Column(
@@ -444,16 +424,18 @@ class _ReceiptPDFDocument {
               children: [
                 pdfw.Text(
                   "Imp. Total:",
-                  style: totalStyle.copyWith(
+                  style: pdfw.TextStyle(
                     fontWeight: pdfw.FontWeight.bold,
-                    fontSize: (totalStyle.fontSize ?? 8) + 1,
+                    fontSize:
+                        (double.parse(EnvVariables.receiptFontSize ?? "8")) + 1,
                   ),
                 ),
                 pdfw.Text(
                   "\$$total",
-                  style: totalStyle.copyWith(
+                  style: pdfw.TextStyle(
                     fontWeight: pdfw.FontWeight.bold,
-                    fontSize: (totalStyle.fontSize ?? 8) + 1,
+                    fontSize:
+                        (double.parse(EnvVariables.receiptFontSize ?? "8")) + 1,
                   ),
                 ),
               ],
@@ -467,9 +449,7 @@ class _ReceiptPDFDocument {
                   children: [
                     pdfw.Text(
                       "Total Sin Desc. \$$totalNoDiscount",
-                      style: totalStyle.copyWith(
-                        fontWeight: pdfw.FontWeight.bold,
-                      ),
+                      style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
                     ),
                   ],
                 ),
@@ -482,7 +462,6 @@ class _ReceiptPDFDocument {
     double total = 0,
     double totalNoDiscount = 0,
   }) {
-    pdfw.TextStyle totalStyle = _Line().textStyle;
     return pdfw.Container(
       margin: pdfw.EdgeInsets.only(top: 16),
       child: pdfw.Column(
@@ -504,16 +483,18 @@ class _ReceiptPDFDocument {
               children: [
                 pdfw.Text(
                   "Total:",
-                  style: totalStyle.copyWith(
+                  style: pdfw.TextStyle(
                     fontWeight: pdfw.FontWeight.bold,
-                    fontSize: (totalStyle.fontSize ?? 10) + 1,
+                    fontSize:
+                        double.parse(EnvVariables.receiptFontSize ?? "10") + 1,
                   ),
                 ),
                 pdfw.Text(
                   "$total",
-                  style: totalStyle.copyWith(
+                  style: pdfw.TextStyle(
                     fontWeight: pdfw.FontWeight.bold,
-                    fontSize: (totalStyle.fontSize ?? 10) + 1,
+                    fontSize:
+                        double.parse(EnvVariables.receiptFontSize ?? "10") + 1,
                   ),
                 ),
               ],
@@ -530,20 +511,21 @@ class _ReceiptPDFDocument {
     Uint8List? imageBytes,
     String? qrCodeData,
   }) {
-    pdfw.TextStyle taxInformationStyle = _Line().textStyle;
     return pdfw.Container(
       margin: pdfw.EdgeInsets.only(top: 8),
       child: pdfw.Column(
         children: [
           pdfw.SizedBox.square(
-            dimension: ((taxInformationStyle.fontSize ?? 10) / 2),
+            dimension: (double.parse(EnvVariables.receiptFontSize ?? "10") / 2),
           ),
           ...fiscal
               .map(
                 (line) => [
                   _ReceiptPDFDocument.Line(line),
                   pdfw.SizedBox.square(
-                    dimension: ((taxInformationStyle.fontSize ?? 10) / 2),
+                    dimension:
+                        (double.parse(EnvVariables.receiptFontSize ?? "10") /
+                        2),
                   ),
                 ],
               )
@@ -582,14 +564,16 @@ class _ReceiptPDFDocument {
                   ],
                 ),
           pdfw.SizedBox.square(
-            dimension: ((taxInformationStyle.fontSize ?? 10) / 2),
+            dimension: (double.parse(EnvVariables.receiptFontSize ?? "10") / 2),
           ),
           ...bottom
               .map(
                 (line) => [
                   _ReceiptPDFDocument.Line(line),
                   pdfw.SizedBox.square(
-                    dimension: ((taxInformationStyle.fontSize ?? 10) / 2),
+                    dimension:
+                        (double.parse(EnvVariables.receiptFontSize ?? "10") /
+                        2),
                   ),
                 ],
               )
