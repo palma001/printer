@@ -4,11 +4,11 @@ import "dart:io";
 
 import "package:flutter/material.dart";
 import "package:path_provider/path_provider.dart";
-import "package:printer_ui_win/models/printer.dart";
-import "package:printer_ui_win/services/api.dart";
-import "package:printer_ui_win/services/websocket.dart";
-import "package:printer_ui_win/store/error_store.dart";
-import "package:printer_ui_win/utils/print.dart";
+import "package:qbitsinc_printer_manager/models/printer.dart";
+import "package:qbitsinc_printer_manager/services/api.dart";
+import "package:qbitsinc_printer_manager/services/websocket.dart";
+import "package:qbitsinc_printer_manager/store/error_store.dart";
+import "package:qbitsinc_printer_manager/utils/print.dart";
 import "package:web_socket_channel/web_socket_channel.dart";
 
 class MyHomePage extends StatefulWidget {
@@ -18,7 +18,12 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-enum _MyHomeStatus { disconnected, connected, pending }
+enum _MyHomeStatus {
+  disconnected,
+  connected,
+  sendingPrinters,
+  connectingSocket,
+}
 
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _cuitController = TextEditingController();
@@ -68,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
       print("CUIT from $path: $cuit");
       if (cuit != null) {
         _cuitController.text = cuit;
-        // _loadPrinters();
+        _loadPrinters();
       }
     } catch (e) {
       ErrorStore.instance.update(
@@ -116,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _loadPrinters() async {
     try {
       setState(() {
-        _status = _MyHomeStatus.pending;
+        _status = _MyHomeStatus.sendingPrinters;
       });
       var printers = await getPrinters();
       setState(() {
@@ -125,6 +130,9 @@ class _MyHomePageState extends State<MyHomePage> {
       var cuitTrim = _cuitController.text.trim();
       try {
         await registerDeviceToAPI(cuitTrim, Platform.localHostname, printers);
+        setState(() {
+          _status = _MyHomeStatus.connectingSocket;
+        });
       } catch (e) {
         ErrorStore.instance.update(
           SysNotification(show: true, title: "An error occur", message: "$e"),
@@ -183,77 +191,124 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.only(top: 16.0),
-        child: Column(
-          spacing: 16,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(
-              flex: 1,
-              child: Center(
-                child: Image.asset(
-                  "assets/images/printer-ui-win.png",
-                  width: 325,
-                  height: 325,
-                ),
-              ),
-            ),
-            Expanded(
-              flex: 3,
+            Container(
+              constraints: BoxConstraints(maxWidth: 320),
               child: Column(
+                spacing: 16,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [Text(Platform.localHostname)],
+                  Expanded(
+                    flex: 1,
+                    child: Center(
+                      child: Image.asset(
+                        "assets/images/printer-ui-win.png",
+                        width: 325,
+                        height: 325,
+                      ),
+                    ),
                   ),
-                  _status == _MyHomeStatus.disconnected
-                      ? Expanded(
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: TextField(
-                                  controller: _cuitController,
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    hintText: "Insert CUIT",
-                                  ),
-                                ),
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          spacing: 4,
+                          children: [
+                            Text(
+                              "Qbits Printer Manager",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                              ElevatedButton(
-                                onPressed: _saveConfigCUIT,
-                                child: Text("Connect"),
+                            ),
+                            Text(
+                              "v0.20",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
                               ),
-                            ],
-                          ),
-                        )
-                      : _status == _MyHomeStatus.pending
-                      ? Expanded(
-                          child: Column(
-                            spacing: 16.0,
-                            children: [
-                              Container(
-                                margin: EdgeInsets.only(top: 24.0),
-                                child: CircularProgressIndicator(),
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [Text("Connecting...")],
-                              ),
-                            ],
-                          ),
-                        )
-                      : Expanded(
-                          child: Column(
-                            children: [
-                              Container(
-                                margin: EdgeInsets.only(top: 16.0),
-                                child: ElevatedButton(
-                                  onPressed: _disconnect,
-                                  child: Text("Disconnect"),
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [Text(Platform.localHostname)],
+                        ),
+                        _status == _MyHomeStatus.disconnected
+                            ? Expanded(
+                                child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: TextField(
+                                        controller: _cuitController,
+                                        decoration: InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          hintText: "Insert CUIT",
+                                        ),
+                                      ),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: _saveConfigCUIT,
+                                      child: Text("Connect"),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : _status == _MyHomeStatus.sendingPrinters
+                            ? Expanded(
+                                child: Column(
+                                  spacing: 16.0,
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(top: 24.0),
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [Text("Sending printers...")],
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : _status == _MyHomeStatus.connectingSocket
+                            ? Expanded(
+                                child: Column(
+                                  spacing: 16.0,
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(top: 24.0),
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [Text("Connecting to app...")],
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Expanded(
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(top: 16.0),
+                                      child: ElevatedButton(
+                                        onPressed: _disconnect,
+                                        child: Text("Disconnect"),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

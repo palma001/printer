@@ -1,4 +1,4 @@
-import "package:printer_ui_win/utils/string_extension.dart";
+import "package:qbitsinc_printer_manager/utils/string_extension.dart";
 
 class ReceiptTxtBuilder {
   final List<String> _header;

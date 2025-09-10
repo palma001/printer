@@ -1,8 +1,8 @@
 import "package:flutter/services.dart";
 import "package:pdf/pdf.dart";
 import "package:pdf/widgets.dart" as pdfw;
-import "package:printer_ui_win/constants/env.dart";
 import "package:printing/printing.dart";
+import "package:qbitsinc_printer_manager/constants/env.dart";
 
 class _Item {
   String description;

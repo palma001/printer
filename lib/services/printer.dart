@@ -2,8 +2,8 @@ import "dart:io";
 import "dart:typed_data";
 
 import "package:flutter/foundation.dart";
-import "package:printer_ui_win/services/ticket.dart";
 import "package:printing/printing.dart";
+import "package:qbitsinc_printer_manager/services/ticket.dart";
 
 Future<void> printTicket(
   String destination,

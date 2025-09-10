@@ -1,8 +1,8 @@
 import "dart:convert";
 
-import "package:printer_ui_win/constants/env.dart";
 import "package:http/http.dart" as http;
-import "package:printer_ui_win/models/printer.dart";
+import "package:qbitsinc_printer_manager/constants/env.dart";
+import "package:qbitsinc_printer_manager/models/printer.dart";
 
 Future<String> registerDeviceToAPI(
   String cuit,

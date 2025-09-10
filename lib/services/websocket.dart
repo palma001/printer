@@ -1,10 +1,10 @@
 import "dart:async";
 import "dart:convert";
 
-import "package:printer_ui_win/constants/env.dart";
-import "package:printer_ui_win/models/printer.dart";
-import "package:printer_ui_win/services/printer.dart";
-import "package:printer_ui_win/store/error_store.dart";
+import "package:qbitsinc_printer_manager/constants/env.dart";
+import "package:qbitsinc_printer_manager/models/printer.dart";
+import "package:qbitsinc_printer_manager/services/printer.dart";
+import "package:qbitsinc_printer_manager/store/error_store.dart";
 import "package:web_socket_channel/web_socket_channel.dart";
 
 String buildPusherWsUrl() {

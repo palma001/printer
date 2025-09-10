@@ -5,9 +5,9 @@ import "package:flutter/foundation.dart";
 import "package:intl/intl.dart";
 import "package:pdf/pdf.dart";
 import "package:pdf/widgets.dart" as pdfw;
-import "package:printer_ui_win/utils/receipt_pdf_builder.dart";
-import "package:printer_ui_win/utils/receipt_txt_builder.dart";
-import "package:printer_ui_win/utils/string_extension.dart";
+import "package:qbitsinc_printer_manager/utils/receipt_pdf_builder.dart";
+import "package:qbitsinc_printer_manager/utils/receipt_txt_builder.dart";
+import "package:qbitsinc_printer_manager/utils/string_extension.dart";
 import "package:qr/qr.dart";
 
 (QrImage, String) generate_afip_qr(
