@@ -17,6 +17,23 @@ class _Item {
   });
 }
 
+class _Payment {
+  String name;
+  double amount;
+  String discountAmount;
+  String discountPercentage;
+  String coinName;
+  String coinSymbol;
+  _Payment({
+    required this.name,
+    required this.amount,
+    required this.discountAmount,
+    required this.discountPercentage,
+    required this.coinName,
+    required this.coinSymbol,
+  });
+}
+
 class _Line {
   String left;
   String right;
@@ -401,7 +418,167 @@ class _ReceiptPDFDocument {
     );
   }
 
-  static pdfw.Widget Total({double total = 0, double? totalNoDiscount}) {
+  static pdfw.Widget Payments([List<_Payment> items = const []]) {
+    return pdfw.Container(
+      margin: pdfw.EdgeInsets.only(top: 2, bottom: 2),
+      child: pdfw.Column(
+        children: [
+          pdfw.Row(
+            mainAxisAlignment: pdfw.MainAxisAlignment.start,
+            children: [
+              pdfw.Text(
+                "Métodos de Pago",
+                style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
+              ),
+            ],
+          ),
+          pdfw.SizedBox.square(dimension: 2),
+          pdfw.Row(
+            mainAxisAlignment: pdfw.MainAxisAlignment.end,
+            children: [
+              pdfw.Expanded(
+                flex: 3,
+                child: pdfw.Row(
+                  mainAxisAlignment: pdfw.MainAxisAlignment.end,
+                  children: [
+                    pdfw.Text(
+                      "Monto",
+                      style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              pdfw.Expanded(
+                flex: 2,
+                child: pdfw.Row(
+                  mainAxisAlignment: pdfw.MainAxisAlignment.end,
+                  children: [
+                    pdfw.Text(
+                      "Mon.",
+                      style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              pdfw.Expanded(
+                flex: 2,
+                child: pdfw.Row(
+                  mainAxisAlignment: pdfw.MainAxisAlignment.end,
+                  children: [
+                    pdfw.Text(
+                      "Desc.(%)",
+                      style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              pdfw.Expanded(
+                flex: 3,
+                child: pdfw.Row(
+                  mainAxisAlignment: pdfw.MainAxisAlignment.end,
+                  children: [
+                    pdfw.Text(
+                      "Monto Desc.",
+                      style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          pdfw.SizedBox.square(dimension: 2),
+          Separator(),
+          pdfw.SizedBox.square(dimension: 2),
+          ...items.map((item) {
+            return pdfw.Column(
+              children: [
+                pdfw.Row(
+                  children: [
+                    pdfw.Expanded(
+                      flex: 3,
+                      child: pdfw.Wrap(
+                        direction: pdfw.Axis.horizontal,
+                        alignment: pdfw.WrapAlignment.start,
+                        children: [pdfw.Text(item.name)],
+                      ),
+                    ),
+                    pdfw.Expanded(flex: 1, child: pdfw.Container()),
+                  ],
+                ),
+                pdfw.Row(
+                  mainAxisAlignment: pdfw.MainAxisAlignment.end,
+                  children: [
+                    pdfw.Expanded(
+                      flex: 3,
+                      child: pdfw.Row(
+                        mainAxisAlignment: pdfw.MainAxisAlignment.end,
+                        children: [
+                          pdfw.Text(
+                            "\$${item.amount.toStringAsFixed(2)}",
+                            style: pdfw.TextStyle(
+                              fontWeight: pdfw.FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    pdfw.Expanded(
+                      flex: 2,
+                      child: pdfw.Row(
+                        mainAxisAlignment: pdfw.MainAxisAlignment.center,
+                        children: [
+                          pdfw.Text(
+                            item.coinSymbol,
+                            style: pdfw.TextStyle(
+                              fontWeight: pdfw.FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    pdfw.Expanded(
+                      flex: 2,
+                      child: pdfw.Row(
+                        mainAxisAlignment: pdfw.MainAxisAlignment.end,
+                        children: [
+                          pdfw.Text(
+                            "${item.discountPercentage}%",
+                            style: pdfw.TextStyle(
+                              fontWeight: pdfw.FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    pdfw.Expanded(
+                      flex: 3,
+                      child: pdfw.Row(
+                        mainAxisAlignment: pdfw.MainAxisAlignment.end,
+                        children: [
+                          pdfw.Text(
+                            "\$${item.discountAmount}",
+                            style: pdfw.TextStyle(
+                              fontWeight: pdfw.FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  static pdfw.Widget Total({
+    double total = 0,
+    double? totalNoDiscount,
+    double? totalDiscount,
+  }) {
     return pdfw.Container(
       margin: pdfw.EdgeInsets.only(top: 16),
       child: pdfw.Column(
@@ -452,6 +629,21 @@ class _ReceiptPDFDocument {
                       style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
                     ),
                   ],
+                ),
+          ?totalDiscount == null
+              ? null
+              : pdfw.Container(
+                  margin: pdfw.EdgeInsets.only(top: 6, bottom: 6),
+                  child: pdfw.Wrap(
+                    direction: pdfw.Axis.horizontal,
+                    alignment: pdfw.WrapAlignment.center,
+                    children: [
+                      pdfw.Text(
+                        "Total Desc. \$$totalDiscount",
+                        style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
+                      ),
+                    ],
+                  ),
                 ),
         ],
       ),
@@ -594,9 +786,21 @@ class ReceiptPDFBuilder {
   late (List<_Line>, String?, String?, String?) _cashierInfoLines;
   late List<_Line> _clientInfoLines;
   late List<_Item> _items;
+  late List<_Payment> _payments_methods;
   late List<_Line> _footer_top;
   late List<_Line> _footer_bottom;
-  late (double, double) _total;
+  late (double, double, double?) _total;
+
+  ReceiptPDFBuilder() {
+    _headerLines = ([], null);
+    _cashierInfoLines = ([], null, null, null);
+    _clientInfoLines = [];
+    _items = [];
+    _payments_methods = [];
+    _footer_bottom = [];
+    _footer_top = [];
+    _total = (0, 0, null);
+  }
 
   static _Line Line({
     String left = "",
@@ -628,14 +832,22 @@ class ReceiptPDFBuilder {
     );
   }
 
-  ReceiptPDFBuilder() {
-    _headerLines = ([], null);
-    _cashierInfoLines = ([], null, null, null);
-    _clientInfoLines = [];
-    _items = [];
-    _footer_bottom = [];
-    _footer_top = [];
-    _total = (0, 0);
+  static _Payment Payment({
+    required String name,
+    required double amount,
+    required String discountAmount,
+    required String discountPercentage,
+    required String coinName,
+    required String coinSymbol,
+  }) {
+    return _Payment(
+      name: name,
+      amount: amount,
+      discountAmount: discountAmount,
+      discountPercentage: discountPercentage,
+      coinName: coinName,
+      coinSymbol: coinSymbol,
+    );
   }
 
   ReceiptPDFBuilder addSeparator() {
@@ -691,8 +903,17 @@ class ReceiptPDFBuilder {
     return this;
   }
 
-  ReceiptPDFBuilder addTotal({double total = 0, double totalNoDiscount = 0}) {
-    _total = (total, totalNoDiscount);
+  ReceiptPDFBuilder addPayments(List<_Payment> payment) {
+    _payments_methods.addAll(payment);
+    return this;
+  }
+
+  ReceiptPDFBuilder addTotal({
+    double total = 0,
+    double totalNoDiscount = 0,
+    double? totalDiscount,
+  }) {
+    _total = (total, totalNoDiscount, totalDiscount);
     return this;
   }
 
@@ -724,11 +945,15 @@ class ReceiptPDFBuilder {
         type == ReceiptType.receipt
             ? _ReceiptPDFDocument.Items(_items)
             : _ReceiptPDFDocument.CommandaItems(_items),
+        ?type == ReceiptType.receipt
+            ? _ReceiptPDFDocument.Payments(_payments_methods)
+            : null,
         _ReceiptPDFDocument.Separator(),
         type == ReceiptType.receipt
             ? _ReceiptPDFDocument.Total(
                 total: _total.$1,
                 totalNoDiscount: _total.$2,
+                totalDiscount: _total.$3,
               )
             : _ReceiptPDFDocument.CommandaTotal(
                 total: _total.$1,

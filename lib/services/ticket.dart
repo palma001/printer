@@ -44,6 +44,7 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
   Map<String, dynamic>? electronicInvoice = data["electronic_invoice"];
   Map<String, dynamic> fields = data["electronic_invoice"]?["fields"] ?? {};
   Map<String, dynamic> vendedor = data["seller"] ?? {};
+  List<dynamic> invoicePayments = data["invoice_payments"] ?? [];
   var (_, qrString) = generate_afip_qr(data, company, fields);
   builder
       .addInHeader([
@@ -160,9 +161,26 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
           );
         }).toList(),
       )
+      .addPayments(
+        invoicePayments
+            .map(
+              (payment) => ReceiptPDFBuilder.Payment(
+                name: "${payment["payment_method"]?["name"] ?? ""}",
+                amount: double.parse("${payment["amount"] ?? 0.0}"),
+                discountAmount: payment["discount_amount"],
+                discountPercentage: payment["discount_percentage"],
+                coinName: payment["coin"]["name"],
+                coinSymbol: payment["coin"]["symbol"],
+              ),
+            )
+            .toList(),
+      )
       .addTotal(
         total: double.parse("${data['total'] ?? "0.0"}"),
         totalNoDiscount: double.parse("${data['subtotal'] ?? "0.0"}"),
+        totalDiscount: data["discount_total"] != null
+            ? double.parse("${data["discount_total"]}")
+            : null,
       )
       .addInFooterTop([
         ReceiptPDFBuilder.Line(
@@ -184,24 +202,28 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
               ]
             : []),
       ])
-      .addInFooterBottom([
-        ReceiptPDFBuilder.Line(
-          left: "Comprobante Autorizado",
-          style: pdfw.TextStyle(
-            fontWeight: pdfw.FontWeight.bold,
-            fontStyle: pdfw.FontStyle.italic,
-          ),
-        ),
-        ReceiptPDFBuilder.Line(
-          left:
-              "Esta Administracion Federal no se responsabiliza por sus datos",
-          style: pdfw.TextStyle(fontStyle: pdfw.FontStyle.italic),
-        ),
-        ReceiptPDFBuilder.Line(
-          left: "Ingresado en el detalle dela operacion",
-          style: pdfw.TextStyle(fontStyle: pdfw.FontStyle.italic),
-        ),
-      ]);
+      .addInFooterBottom(
+        electronicInvoice == null
+            ? []
+            : [
+                ReceiptPDFBuilder.Line(
+                  left: "Comprobante Autorizado",
+                  style: pdfw.TextStyle(
+                    fontWeight: pdfw.FontWeight.bold,
+                    fontStyle: pdfw.FontStyle.italic,
+                  ),
+                ),
+                ReceiptPDFBuilder.Line(
+                  left:
+                      "Esta Administracion Federal no se responsabiliza por sus datos",
+                  style: pdfw.TextStyle(fontStyle: pdfw.FontStyle.italic),
+                ),
+                ReceiptPDFBuilder.Line(
+                  left: "Ingresado en el detalle dela operacion",
+                  style: pdfw.TextStyle(fontStyle: pdfw.FontStyle.italic),
+                ),
+              ],
+      );
 
   return builder.build(
     pageFormat: PdfPageFormat(
