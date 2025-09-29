@@ -426,9 +426,12 @@ class _ReceiptPDFDocument {
           pdfw.Row(
             mainAxisAlignment: pdfw.MainAxisAlignment.start,
             children: [
-              pdfw.Text(
-                "Métodos de Pago",
-                style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
+              pdfw.Container(
+                margin: pdfw.EdgeInsets.only(top: 8, bottom: 0),
+                child: pdfw.Text(
+                  "Métodos de Pago",
+                  style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -945,9 +948,12 @@ class ReceiptPDFBuilder {
         type == ReceiptType.receipt
             ? _ReceiptPDFDocument.Items(_items)
             : _ReceiptPDFDocument.CommandaItems(_items),
-        ?type == ReceiptType.receipt
-            ? _ReceiptPDFDocument.Payments(_payments_methods)
-            : null,
+        ...(type == ReceiptType.receipt
+            ? [
+                _ReceiptPDFDocument.Separator(),
+                _ReceiptPDFDocument.Payments(_payments_methods),
+              ]
+            : []),
         _ReceiptPDFDocument.Separator(),
         type == ReceiptType.receipt
             ? _ReceiptPDFDocument.Total(

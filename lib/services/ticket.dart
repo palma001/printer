@@ -183,10 +183,12 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
             : null,
       )
       .addInFooterTop([
-        ReceiptPDFBuilder.Line(
-          left: "Regimen de transparencia fiscal consumidor (ley 27743)",
-          style: pdfw.TextStyle(fontStyle: pdfw.FontStyle.italic),
-        ),
+        ?electronicInvoice == null
+            ? null
+            : ReceiptPDFBuilder.Line(
+                left: "Regimen de transparencia fiscal consumidor (ley 27743)",
+                style: pdfw.TextStyle(fontStyle: pdfw.FontStyle.italic),
+              ),
         ReceiptPDFBuilder.Line(
           left: "I.V.A. Contenido",
           right:
