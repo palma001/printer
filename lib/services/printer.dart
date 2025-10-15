@@ -11,19 +11,22 @@ Future<void> printTicket(
   int printerSize,
 ) async {
   Uint8List contentPDF = await generatePDFReceipt(data, printerSize);
-  Printer printer = await Printing.listPrinters()
-      .asStream()
-      .map(
-        (printers) =>
-            printers.firstWhere((printer) => printer.name == destination),
-      )
-      .first;
   try {
+    Printer printer = await Printing.listPrinters()
+        .asStream()
+        .map(
+          (printers) =>
+              printers.firstWhere((printer) => printer.name == destination),
+        )
+        .first;
     await Printing.directPrintPdf(
       printer: printer,
       onLayout: (_) => contentPDF,
     );
   } catch (e) {
+    if (e is StateError) {
+      throw Exception("Printer: $destination, not found: $e");
+    }
     throw Exception("Error sending ticket to printer at $destination: $e");
   }
 }
