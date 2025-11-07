@@ -41,7 +41,7 @@ import "package:qr/qr.dart";
 Future<Uint8List> generatePDFReceipt(
   dynamic data,
   int printerSize,
-  String type,
+  ReceiptType type,
 ) {
   ReceiptPDFBuilder builder = ReceiptPDFBuilder();
   Map<String, dynamic> company = data["company"] ?? {};
@@ -51,39 +51,50 @@ Future<Uint8List> generatePDFReceipt(
   List<dynamic> invoicePayments = data["invoice_payments"] ?? [];
   var (_, qrString) = generate_afip_qr(data, company, fields);
   builder
-      .addInHeader([
-        ReceiptPDFBuilder.Line(
-          left: "${company["name"]?.toString().toUpperCase()}",
-          align: pdfw.WrapAlignment.center,
-        ),
-        ReceiptPDFBuilder.Line(
-          left: "${data["client"]?["name"] ?? ""}",
-          align: pdfw.WrapAlignment.start,
-        ),
-        ReceiptPDFBuilder.Line(
-          left: "I.V.A: Resp Inscripto",
-          right: "C.U.I.T.: ${company["document_number"] ?? ""}",
-          align: pdfw.WrapAlignment.spaceBetween,
-          runAlignment: pdfw.WrapAlignment.center,
-        ),
-        ...(data["billing"] != null
+      .addInHeader(
+        type == ReceiptType.command
             ? [
                 ReceiptPDFBuilder.Line(
-                  left: "IIBB: ${company["document_number"] ?? "----"}",
-                  right: fields["activity_start_date"] != null
-                      ? "In. Act: ${formatDate(DateTime.parse(fields["activity_start_date"]), [dd, "/", mm, "/", yyyy])}"
-                      : "",
+                  left: "${company["name"]?.toString().toUpperCase()}",
+                  right: "C.U.I.T.: ${company["document_number"] ?? ""}",
+                  align: pdfw.WrapAlignment.center,
+                ),
+              ]
+            : [
+                ReceiptPDFBuilder.Line(
+                  left: "${company["name"]?.toString().toUpperCase()}",
+                  align: pdfw.WrapAlignment.center,
+                ),
+                ReceiptPDFBuilder.Line(
+                  left: "${data["client"]?["name"] ?? ""}",
+                  align: pdfw.WrapAlignment.start,
+                ),
+                ReceiptPDFBuilder.Line(
+                  left: "I.V.A: Resp Inscripto",
+                  right: "C.U.I.T.: ${company["document_number"] ?? ""}",
                   align: pdfw.WrapAlignment.spaceBetween,
                   runAlignment: pdfw.WrapAlignment.center,
                 ),
-              ]
-            : []),
-        ReceiptPDFBuilder.Line(
-          left: "Dirección: ${company["address"] ?? ""}",
-          align: pdfw.WrapAlignment.start,
-          runAlignment: pdfw.WrapAlignment.center,
-        ),
-      ], headerImgUrl: company["url"])
+                ...(data["billing"] != null
+                    ? [
+                        ReceiptPDFBuilder.Line(
+                          left: "IIBB: ${company["document_number"] ?? "----"}",
+                          right: fields["activity_start_date"] != null
+                              ? "In. Act: ${formatDate(DateTime.parse(fields["activity_start_date"]), [dd, "/", mm, "/", yyyy])}"
+                              : "",
+                          align: pdfw.WrapAlignment.spaceBetween,
+                          runAlignment: pdfw.WrapAlignment.center,
+                        ),
+                      ]
+                    : []),
+                ReceiptPDFBuilder.Line(
+                  left: "Dirección: ${company["address"] ?? ""}",
+                  align: pdfw.WrapAlignment.start,
+                  runAlignment: pdfw.WrapAlignment.center,
+                ),
+              ],
+        headerImgUrl: company["url"],
+      )
       .addInCashierInfo(
         [
           ...(data["billing"] != null && fields["voucher_type"] != null
@@ -123,15 +134,17 @@ Future<Uint8List> generatePDFReceipt(
             style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
           ),
         ],
-        cod:
-            fields["voucher_type"]?["id"] ??
-            "${data["invoice_type"]?["id"] ?? ""}",
+        cod: type == ReceiptType.command
+            ? null
+            : fields["voucher_type"]?["id"] ??
+                  "${data["invoice_type"]?["id"] ?? ""}",
         desc:
             (fields["voucher_type"]?["Desc"] as String?)?.split(" ")[0] ??
             "${data["invoice_type"]?["name"] ?? ""}",
-        type:
-            (fields["voucher_type"]?["Desc"] as String?)?.split(" ")[1] ??
-            "${data["invoice_type"]?["acronym_serie"] ?? ""}",
+        type: type == ReceiptType.command
+            ? null
+            : (fields["voucher_type"]?["Desc"] as String?)?.split(" ")[1] ??
+                  "${data["invoice_type"]?["acronym_serie"] ?? ""}",
       )
       .addInClientInfo([
         ...(data["billing"] != null
@@ -239,11 +252,7 @@ Future<Uint8List> generatePDFReceipt(
       double.infinity,
       marginAll: 2 * PdfPageFormat.cm,
     ),
-    type:
-        RegExp("^comm", caseSensitive: false).allMatches(type).isNotEmpty ==
-            true
-        ? ReceiptType.command
-        : ReceiptType.receipt,
+    type: type,
     qrCodeData: electronicInvoice == null ? null : qrString,
   );
 }

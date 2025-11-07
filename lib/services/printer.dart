@@ -5,6 +5,7 @@ import "package:flutter/foundation.dart";
 import "package:printing/printing.dart";
 import "package:qbitsinc_printer_manager/services/ticket.dart";
 import "package:qbitsinc_printer_manager/store/app_main_store.dart";
+import "package:qbitsinc_printer_manager/utils/receipt_pdf_builder.dart";
 
 Future<void> printTicket(
   String destination,
@@ -18,7 +19,13 @@ Future<void> printTicket(
       message: "Printing Document to ${destination}",
     ),
   );
-  Uint8List contentPDF = await generatePDFReceipt(data, printerSize, type);
+  Uint8List contentPDF = await generatePDFReceipt(
+    data,
+    printerSize,
+    RegExp("^comm", caseSensitive: false).allMatches(type).isNotEmpty == true
+        ? ReceiptType.command
+        : ReceiptType.receipt,
+  );
   try {
     Printer printer = await Printing.listPrinters()
         .asStream()
@@ -48,7 +55,13 @@ Future<void> printNetworkTicket(
 ) async {
   try {
     // 1. Build the receipt data using the same logic as local printing.
-    var receipt = await generatePDFReceipt(data, printerSize, type);
+    var receipt = await generatePDFReceipt(
+      data,
+      printerSize,
+      RegExp("^comm", caseSensitive: false).allMatches(type).isNotEmpty == true
+          ? ReceiptType.command
+          : ReceiptType.receipt,
+    );
     Uint8List receiptUintList = Uint8List.fromList(receipt);
 
     // 2. Connect to the network printer via raw TCP socket on port 9100.

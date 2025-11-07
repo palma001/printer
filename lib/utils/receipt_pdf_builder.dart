@@ -151,8 +151,8 @@ class _ReceiptPDFDocument {
   static pdfw.Widget CashierInfo(
     List<_Line> lines, {
     String desc = "",
-    String type = "",
-    String cod = "",
+    String? type,
+    String? cod,
   }) {
     return pdfw.Container(
       margin: pdfw.EdgeInsets.only(top: 2, bottom: 2),
@@ -168,23 +168,25 @@ class _ReceiptPDFDocument {
                     desc,
                     style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
                   ),
-                  pdfw.Text("COD $cod"),
+                  ?cod != null ? pdfw.Text("COD $cod") : null,
                 ],
               ),
               pdfw.SizedBox(width: 8),
-              pdfw.Container(
-                decoration: pdfw.BoxDecoration(
-                  border: pdfw.Border.all(
-                    width: 0.1,
-                    color: PdfColor.fromHex("#000000"),
-                  ),
-                ),
-                padding: pdfw.EdgeInsets.all(4),
-                child: pdfw.Text(
-                  type,
-                  style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
-                ),
-              ),
+              ?type == null
+                  ? null
+                  : pdfw.Container(
+                      decoration: pdfw.BoxDecoration(
+                        border: pdfw.Border.all(
+                          width: 0.1,
+                          color: PdfColor.fromHex("#000000"),
+                        ),
+                      ),
+                      padding: pdfw.EdgeInsets.all(4),
+                      child: pdfw.Text(
+                        type,
+                        style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
+                      ),
+                    ),
             ],
           ),
           ...lines.map((line) => _ReceiptPDFDocument.Line(line)),
@@ -926,7 +928,8 @@ class ReceiptPDFBuilder {
     String? qrCodeData = "",
   }) async {
     _ReceiptPDFDocument document = _ReceiptPDFDocument(pageFormat: pageFormat);
-    pdfw.ImageProvider? headerImage = _headerLines.$2 == null
+    pdfw.ImageProvider? headerImage =
+        _headerLines.$2 == null || type == ReceiptType.command
         ? null
         : await networkImage(_headerLines.$2!);
     ByteData? imgData = qrCodeData == null
@@ -955,16 +958,13 @@ class ReceiptPDFBuilder {
               ]
             : []),
         _ReceiptPDFDocument.Separator(),
-        type == ReceiptType.receipt
+        ?type == ReceiptType.receipt
             ? _ReceiptPDFDocument.Total(
                 total: _total.$1,
                 totalNoDiscount: _total.$2,
                 totalDiscount: _total.$3,
               )
-            : _ReceiptPDFDocument.CommandaTotal(
-                total: _total.$1,
-                totalNoDiscount: _total.$2,
-              ),
+            : null,
         _ReceiptPDFDocument.TaxInformation(
           fiscal: _footer_top,
           bottom: _footer_bottom,
