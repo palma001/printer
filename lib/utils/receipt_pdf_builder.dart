@@ -150,7 +150,7 @@ class _ReceiptPDFDocument {
 
   static pdfw.Widget CashierInfo(
     List<_Line> lines, {
-    String desc = "",
+    String? desc = "",
     String? type,
     String? cod,
   }) {
@@ -158,37 +158,43 @@ class _ReceiptPDFDocument {
       margin: pdfw.EdgeInsets.only(top: 2, bottom: 2),
       child: pdfw.Column(
         children: [
-          pdfw.Row(
-            children: [
-              pdfw.SizedBox.square(dimension: 8),
-              pdfw.Column(
-                crossAxisAlignment: pdfw.CrossAxisAlignment.center,
-                children: [
-                  pdfw.Text(
-                    desc,
-                    style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
-                  ),
-                  ?cod != null ? pdfw.Text("COD $cod") : null,
-                ],
-              ),
-              pdfw.SizedBox(width: 8),
-              ?type == null
-                  ? null
-                  : pdfw.Container(
-                      decoration: pdfw.BoxDecoration(
-                        border: pdfw.Border.all(
-                          width: 0.1,
-                          color: PdfColor.fromHex("#000000"),
+          ?desc == null
+              ? null
+              : pdfw.Row(
+                  children: [
+                    pdfw.SizedBox.square(dimension: 8),
+                    pdfw.Column(
+                      crossAxisAlignment: pdfw.CrossAxisAlignment.center,
+                      children: [
+                        pdfw.Text(
+                          desc,
+                          style: pdfw.TextStyle(
+                            fontWeight: pdfw.FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      padding: pdfw.EdgeInsets.all(4),
-                      child: pdfw.Text(
-                        type,
-                        style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
-                      ),
+                        ?cod != null ? pdfw.Text("COD $cod") : null,
+                      ],
                     ),
-            ],
-          ),
+                    pdfw.SizedBox(width: 8),
+                    ?type == null
+                        ? null
+                        : pdfw.Container(
+                            decoration: pdfw.BoxDecoration(
+                              border: pdfw.Border.all(
+                                width: 0.1,
+                                color: PdfColor.fromHex("#000000"),
+                              ),
+                            ),
+                            padding: pdfw.EdgeInsets.all(4),
+                            child: pdfw.Text(
+                              type,
+                              style: pdfw.TextStyle(
+                                fontWeight: pdfw.FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                  ],
+                ),
           ...lines.map((line) => _ReceiptPDFDocument.Line(line)),
         ],
       ),
@@ -374,30 +380,23 @@ class _ReceiptPDFDocument {
             return pdfw.Column(
               children: [
                 pdfw.Row(
-                  children: [
-                    pdfw.Expanded(
-                      flex: 3,
-                      child: pdfw.Wrap(
-                        direction: pdfw.Axis.horizontal,
-                        alignment: pdfw.WrapAlignment.start,
-                        children: [pdfw.Text(item.description)],
-                      ),
-                    ),
-                    pdfw.Expanded(flex: 1, child: pdfw.Container()),
-                  ],
-                ),
-                pdfw.Row(
                   mainAxisAlignment: pdfw.MainAxisAlignment.end,
                   children: [
                     pdfw.Expanded(
-                      flex: 1,
+                      flex: 3,
                       child: pdfw.Row(
-                        mainAxisAlignment: pdfw.MainAxisAlignment.end,
-                        children: [pdfw.Text("")],
+                        mainAxisAlignment: pdfw.MainAxisAlignment.start,
+                        children: [
+                          pdfw.Text(
+                            item.description,
+                            textAlign: pdfw.TextAlign.start,
+                            overflow: pdfw.TextOverflow.span,
+                          ),
+                        ],
                       ),
                     ),
                     pdfw.Expanded(
-                      flex: 2,
+                      flex: 1,
                       child: pdfw.Row(
                         mainAxisAlignment: pdfw.MainAxisAlignment.end,
                         children: [

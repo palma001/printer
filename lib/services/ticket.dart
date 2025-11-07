@@ -55,8 +55,8 @@ Future<Uint8List> generatePDFReceipt(
         type == ReceiptType.command
             ? [
                 ReceiptPDFBuilder.Line(
-                  left: "${company["name"]?.toString().toUpperCase()}",
-                  right: "C.U.I.T.: ${company["document_number"] ?? ""}",
+                  left: "${company["name"]?.toString().toUpperCase()}  ",
+                  right: "NRO DOC.: ${company["document_number"] ?? ""}",
                   align: pdfw.WrapAlignment.center,
                 ),
               ]
@@ -97,6 +97,14 @@ Future<Uint8List> generatePDFReceipt(
       )
       .addInCashierInfo(
         [
+          ?type == ReceiptType.receipt
+              ? null
+              : ReceiptPDFBuilder.Line(
+                  left: "",
+                  align: pdfw.WrapAlignment.start,
+                  runAlignment: pdfw.WrapAlignment.start,
+                  style: pdfw.TextStyle(fontWeight: pdfw.FontWeight.bold),
+                ),
           ...(data["billing"] != null && fields["voucher_type"] != null
               ? [
                   ReceiptPDFBuilder.Line(
@@ -138,16 +146,17 @@ Future<Uint8List> generatePDFReceipt(
             ? null
             : fields["voucher_type"]?["id"] ??
                   "${data["invoice_type"]?["id"] ?? ""}",
-        desc:
-            (fields["voucher_type"]?["Desc"] as String?)?.split(" ")[0] ??
-            "${data["invoice_type"]?["name"] ?? ""}",
+        desc: type == ReceiptType.command
+            ? null
+            : (fields["voucher_type"]?["Desc"] as String?)?.split(" ")[0] ??
+                  "${data["invoice_type"]?["name"] ?? ""}",
         type: type == ReceiptType.command
             ? null
             : (fields["voucher_type"]?["Desc"] as String?)?.split(" ")[1] ??
                   "${data["invoice_type"]?["acronym_serie"] ?? ""}",
       )
       .addInClientInfo([
-        ...(data["billing"] != null
+        ...(data["billing"] != null && type != ReceiptType.command
             ? [
                 ReceiptPDFBuilder.Line(
                   left: "Concepto: ${fields["concept_type"]?["Desc"] ?? ""}",
@@ -160,10 +169,12 @@ Future<Uint8List> generatePDFReceipt(
                 "Mesa: ${table["name"] ?? ""} Sala ${table["living_room"]?["name"] ?? ""}",
           ),
         )),
-        ReceiptPDFBuilder.Line(
-          left: "Direction: ${company["address"] ?? ""}",
-          align: pdfw.WrapAlignment.start,
-        ),
+        ?type == ReceiptType.command
+            ? null
+            : ReceiptPDFBuilder.Line(
+                left: "Direction: ${company["address"] ?? ""}",
+                align: pdfw.WrapAlignment.start,
+              ),
       ])
       .addItems(
         (data["products"] as List<dynamic>? ?? []).map((prod) {
