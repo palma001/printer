@@ -38,7 +38,11 @@ import "package:qr/qr.dart";
   return (QrImage(QrCode(40, QrErrorCorrectLevel.L)..addData(url)), url);
 }
 
-Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
+Future<Uint8List> generatePDFReceipt(
+  dynamic data,
+  int printerSize,
+  String type,
+) {
   ReceiptPDFBuilder builder = ReceiptPDFBuilder();
   Map<String, dynamic> company = data["company"] ?? {};
   Map<String, dynamic>? electronicInvoice = data["electronic_invoice"];
@@ -236,10 +240,7 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
       marginAll: 2 * PdfPageFormat.cm,
     ),
     type:
-        RegExp(
-              "^comm",
-              caseSensitive: false,
-            ).allMatches(data["type"] ?? "ticket").isNotEmpty ==
+        RegExp("^comm", caseSensitive: false).allMatches(type).isNotEmpty ==
             true
         ? ReceiptType.command
         : ReceiptType.receipt,

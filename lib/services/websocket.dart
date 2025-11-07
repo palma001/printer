@@ -48,11 +48,12 @@ Future<void> handlePusherMessage(
       var invoice = payload["invoice"];
       var printer = payload["printer"];
       int printerSize = printer["size"];
+      String type = payload["type"];
 
       if (invoice != null) {
-        await printInvoice(invoice, printer["name"], printerSize);
+        await printInvoice(invoice, printer["name"], type, printerSize);
       } else if (printers.isNotEmpty) {
-        await printInvoice(invoice, printers[0].identifier, printerSize);
+        await printInvoice(invoice, printers[0].identifier, type, printerSize);
       }
     }
   } catch (e) {

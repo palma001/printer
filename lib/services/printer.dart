@@ -10,6 +10,7 @@ Future<void> printTicket(
   String destination,
   dynamic data,
   int printerSize,
+  String type,
 ) async {
   AppMainStore.instance.update(
     AppMainState(
@@ -17,7 +18,7 @@ Future<void> printTicket(
       message: "Printing Document to ${destination}",
     ),
   );
-  Uint8List contentPDF = await generatePDFReceipt(data, printerSize);
+  Uint8List contentPDF = await generatePDFReceipt(data, printerSize, type);
   try {
     Printer printer = await Printing.listPrinters()
         .asStream()
@@ -43,10 +44,11 @@ Future<void> printNetworkTicket(
   String destination,
   dynamic data,
   int printerSize,
+  String type,
 ) async {
   try {
     // 1. Build the receipt data using the same logic as local printing.
-    var receipt = await generatePDFReceipt(data, printerSize);
+    var receipt = await generatePDFReceipt(data, printerSize, type);
     Uint8List receiptUintList = Uint8List.fromList(receipt);
 
     // 2. Connect to the network printer via raw TCP socket on port 9100.
@@ -71,14 +73,15 @@ Future<void> printNetworkTicket(
 
 Future<void> printInvoice(
   dynamic data,
-  String destination, [
+  String destination,
+  String type, [
   int printerSize = 58,
 ]) async {
   print("Printing invoice to $destination and data: $data");
   // Use a more robust regex to check for an IPv4 address format.
   if (RegExp(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$").hasMatch(destination)) {
-    await printNetworkTicket(destination, data, printerSize);
+    await printNetworkTicket(destination, data, printerSize, type);
   } else {
-    await printTicket(destination, data, printerSize);
+    await printTicket(destination, data, printerSize, type);
   }
 }
