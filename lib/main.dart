@@ -15,7 +15,12 @@ Future<void> main() async {
     appPath: Platform.resolvedExecutable,
     packageName: "com.qbitsinc.printer_manager",
   );
+  try {
   await launchAtStartup.enable();
+
+  } catch (e) {
+    print(e);
+  }
   // Load the .env file
   await dotenv.load(fileName: ".env");
   // Ensure that widgets are initialized

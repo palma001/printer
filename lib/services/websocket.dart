@@ -4,6 +4,7 @@ import "dart:convert";
 import "package:qbitsinc_printer_manager/constants/env.dart";
 import "package:qbitsinc_printer_manager/models/printer.dart";
 import "package:qbitsinc_printer_manager/services/printer.dart";
+import "package:qbitsinc_printer_manager/store/app_main_store.dart";
 import "package:qbitsinc_printer_manager/store/error_store.dart";
 import "package:web_socket_channel/web_socket_channel.dart";
 
@@ -26,9 +27,7 @@ Future<void> handlePusherMessage(
   try {
     var msg = json.decode(message);
     var event = msg["event"];
-    print(
-      "Received message: $message event: $event test: ${event == "${EnvVariables.eventName}_$cuit"}",
-    );
+    AppMainStore.instance.update(AppMainState(status: AppStatus.connected));
     if (event == "pusher:connection_established") {
       channel.sink.add(
         json.encode({
@@ -39,13 +38,17 @@ Future<void> handlePusherMessage(
       return;
     }
     if (event == "${EnvVariables.eventName}_$cuit") {
+      AppMainStore.instance.update(
+        AppMainState(
+          status: AppStatus.receiving,
+          message: "Receiving Document...",
+        ),
+      );
       var payload = json.decode(msg["data"]);
       var invoice = payload["invoice"];
       var printer = payload["printer"];
       int printerSize = printer["size"];
-      print(
-        "Sending: to print ${invoice?["id"] ?? "no invoice"} to ${printer["name"]}",
-      );
+
       if (invoice != null) {
         await printInvoice(invoice, printer["name"], printerSize);
       } else if (printers.isNotEmpty) {

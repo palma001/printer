@@ -189,12 +189,14 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
                 left: "Regimen de transparencia fiscal consumidor (ley 27743)",
                 style: pdfw.TextStyle(fontStyle: pdfw.FontStyle.italic),
               ),
-        ReceiptPDFBuilder.Line(
-          left: "I.V.A. Contenido",
-          right:
-              "\$${double.parse("${data["taxe_total"] ?? "0.0"}").toStringAsFixed(2)}",
-          align: pdfw.WrapAlignment.spaceEvenly,
-        ),
+        ?electronicInvoice == null
+            ? null
+            : ReceiptPDFBuilder.Line(
+                left: "I.V.A. Contenido",
+                right:
+                    "\$${double.parse("${data["taxe_total"] ?? "0.0"}").toStringAsFixed(2)}",
+                align: pdfw.WrapAlignment.spaceEvenly,
+              ),
         ...(data["billing"] != null && fields["cae"] != null
             ? [
                 ReceiptPDFBuilder.Line(left: "CAE No ${fields["cae"] ?? ""}"),
@@ -231,7 +233,7 @@ Future<Uint8List> generatePDFReceipt(dynamic data, int printerSize) {
     pageFormat: PdfPageFormat(
       printerSize * PdfPageFormat.mm,
       double.infinity,
-      marginAll: 2 * PdfPageFormat.mm,
+      marginAll: 2 * PdfPageFormat.cm,
     ),
     type:
         RegExp(

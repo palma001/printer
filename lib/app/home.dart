@@ -7,6 +7,7 @@ import "package:path_provider/path_provider.dart";
 import "package:qbitsinc_printer_manager/models/printer.dart";
 import "package:qbitsinc_printer_manager/services/api.dart";
 import "package:qbitsinc_printer_manager/services/websocket.dart";
+import "package:qbitsinc_printer_manager/store/app_main_store.dart";
 import "package:qbitsinc_printer_manager/store/error_store.dart";
 import "package:qbitsinc_printer_manager/utils/print.dart";
 import "package:web_socket_channel/web_socket_channel.dart";
@@ -18,18 +19,10 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-enum _MyHomeStatus {
-  disconnected,
-  connected,
-  sendingPrinters,
-  connectingSocket,
-}
-
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _cuitController = TextEditingController();
   List<Printer> _printerList = [];
   WebSocketChannel? _websocketChannel;
-  _MyHomeStatus _status = _MyHomeStatus.disconnected;
   late StreamSubscription<SysNotification> _subs;
 
   @override
@@ -43,9 +36,9 @@ class _MyHomePageState extends State<MyHomePage> {
           return;
         }
         _showAlertDialog(event.title, event.message);
-        setState(() {
-          _status = _MyHomeStatus.disconnected;
-        });
+        AppMainStore.instance.update(
+          AppMainState(status: AppStatus.disconnected),
+        );
       });
     });
   }
@@ -120,9 +113,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _loadPrinters() async {
     try {
-      setState(() {
-        _status = _MyHomeStatus.sendingPrinters;
-      });
+      AppMainStore.instance.update(
+        AppMainState(status: AppStatus.sendingPrinters),
+      );
       var printers = await getPrinters();
       setState(() {
         _printerList = printers;
@@ -130,9 +123,9 @@ class _MyHomePageState extends State<MyHomePage> {
       var cuitTrim = _cuitController.text.trim();
       try {
         await registerDeviceToAPI(cuitTrim, Platform.localHostname, printers);
-        setState(() {
-          _status = _MyHomeStatus.connectingSocket;
-        });
+        AppMainStore.instance.update(
+          AppMainState(status: AppStatus.connecting),
+        );
       } catch (e) {
         ErrorStore.instance.update(
           SysNotification(show: true, title: "An error occur", message: "$e"),
@@ -142,12 +135,13 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       var (subs, channel) = connectToPusher(printers, cuitTrim);
       subs.onDone(() {
-        setState(() {
-          _status = _MyHomeStatus.disconnected;
-        });
+        AppMainStore.instance.update(
+          AppMainState(status: AppStatus.disconnected),
+        );
       });
+      AppMainStore.instance.update(AppMainState(status: AppStatus.connected));
+
       setState(() {
-        _status = _MyHomeStatus.connected;
         _websocketChannel = channel;
       });
     } catch (e) {
@@ -179,10 +173,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _disconnect() {
+    AppMainStore.instance.update(AppMainState(status: AppStatus.disconnected));
     setState(() {
       _websocketChannel?.sink.close();
       _websocketChannel = null;
-      _status = _MyHomeStatus.disconnected;
     });
   }
 
@@ -199,18 +193,14 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(
                 spacing: 16,
                 children: [
-                  Expanded(
-                    flex: 1,
-                    child: Center(
-                      child: Image.asset(
-                        "assets/images/printer-ui-win.png",
-                        width: 325,
-                        height: 325,
-                      ),
+                  Center(
+                    child: Image.asset(
+                      "assets/images/printer-ui-win.png",
+                      width: 325,
+                      height: 250,
                     ),
                   ),
                   Expanded(
-                    flex: 3,
                     child: Column(
                       children: [
                         Row(
@@ -238,74 +228,103 @@ class _MyHomePageState extends State<MyHomePage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [Text(Platform.localHostname)],
                         ),
-                        _status == _MyHomeStatus.disconnected
-                            ? Expanded(
-                                child: Column(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: TextField(
-                                        controller: _cuitController,
-                                        decoration: InputDecoration(
-                                          border: OutlineInputBorder(),
-                                          hintText: "Insert CUIT",
+                        Expanded(
+                          child: StreamBuilder(
+                            stream: AppMainStore.instance.stream,
+                            builder: (context, snapshot) {
+                              switch (snapshot.data?.status) {
+                                case AppStatus.connected:
+                                  return Column(
+                                    children: [
+                                      Container(
+                                        margin: EdgeInsets.only(top: 16.0),
+                                        child: ElevatedButton(
+                                          onPressed: _disconnect,
+                                          child: Text("Disconnect"),
                                         ),
                                       ),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: _saveConfigCUIT,
-                                      child: Text("Connect"),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : _status == _MyHomeStatus.sendingPrinters
-                            ? Expanded(
-                                child: Column(
-                                  spacing: 16.0,
-                                  children: [
-                                    Container(
-                                      margin: EdgeInsets.only(top: 24.0),
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [Text("Sending printers...")],
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : _status == _MyHomeStatus.connectingSocket
-                            ? Expanded(
-                                child: Column(
-                                  spacing: 16.0,
-                                  children: [
-                                    Container(
-                                      margin: EdgeInsets.only(top: 24.0),
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [Text("Connecting to app...")],
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : Expanded(
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      margin: EdgeInsets.only(top: 16.0),
-                                      child: ElevatedButton(
-                                        onPressed: _disconnect,
-                                        child: Text("Disconnect"),
+                                    ],
+                                  );
+                                case AppStatus.connecting:
+                                  return Column(
+                                    spacing: 16.0,
+                                    children: [
+                                      Container(
+                                        margin: EdgeInsets.only(top: 24.0),
+                                        child: CircularProgressIndicator(),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text("Connecting to app..."),
+                                        ],
+                                      ),
+                                    ],
+                                  );
+                                case AppStatus.sendingPrinters:
+                                  return Column(
+                                    spacing: 16.0,
+                                    children: [
+                                      Container(
+                                        margin: EdgeInsets.only(top: 24.0),
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [Text("Sending printers...")],
+                                      ),
+                                    ],
+                                  );
+                                case AppStatus.receiving:
+                                  return Column(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Text(
+                                          snapshot.data?.message ??
+                                              "Receiving...",
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                case AppStatus.printing:
+                                  return Column(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Text(
+                                          snapshot.data?.message ??
+                                              "Printing...",
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                case AppStatus.error:
+                                default:
+                                  return Column(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: TextField(
+                                          controller: _cuitController,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            hintText: "Insert CUIT",
+                                          ),
+                                        ),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: _saveConfigCUIT,
+                                        child: Text("Connect"),
+                                      ),
+                                    ],
+                                  );
+                              }
+                            },
+                          ),
+                        ),
                       ],
                     ),
                   ),

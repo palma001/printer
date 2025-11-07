@@ -4,12 +4,19 @@ import "dart:typed_data";
 import "package:flutter/foundation.dart";
 import "package:printing/printing.dart";
 import "package:qbitsinc_printer_manager/services/ticket.dart";
+import "package:qbitsinc_printer_manager/store/app_main_store.dart";
 
 Future<void> printTicket(
   String destination,
   dynamic data,
   int printerSize,
 ) async {
+  AppMainStore.instance.update(
+    AppMainState(
+      status: AppStatus.printing,
+      message: "Printing Document to ${destination}",
+    ),
+  );
   Uint8List contentPDF = await generatePDFReceipt(data, printerSize);
   try {
     Printer printer = await Printing.listPrinters()
@@ -23,6 +30,7 @@ Future<void> printTicket(
       printer: printer,
       onLayout: (_) => contentPDF,
     );
+    AppMainStore.instance.update(AppMainState(status: AppStatus.connected));
   } catch (e) {
     if (e is StateError) {
       throw Exception("Printer: $destination, not found: $e");
