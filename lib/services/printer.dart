@@ -16,7 +16,7 @@ Future<void> printTicket(
   AppMainStore.instance.update(
     AppMainState(
       status: AppStatus.printing,
-      message: "Printing Document to ${destination}",
+      message: "Printing Document to $destination",
     ),
   );
   Uint8List contentPDF = await generatePDFReceipt(

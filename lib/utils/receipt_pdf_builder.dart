@@ -649,7 +649,6 @@ class _ReceiptPDFDocument {
 
   static pdfw.Widget CommandaTotal({
     double total = 0,
-    double totalNoDiscount = 0,
   }) {
     return pdfw.Container(
       margin: pdfw.EdgeInsets.only(top: 16),
