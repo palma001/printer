@@ -115,7 +115,7 @@ class _ReceiptPDFDocument {
       margin: pdfw.EdgeInsets.only(top: 2, bottom: 2),
       child: pdfw.Column(
         children: [
-          headerLogo != null
+          ?headerLogo != null
               ? pdfw.Center(
                   child: pdfw.Image(
                     headerLogo,
@@ -123,16 +123,7 @@ class _ReceiptPDFDocument {
                     fit: pdfw.BoxFit.contain,
                   ),
                 )
-              : pdfw.Row(
-                  children: [
-                    pdfw.Expanded(
-                      child: pdfw.Container(
-                        color: PdfColor.fromHex("#a0a0a0"),
-                        height: 0,
-                      ),
-                    ),
-                  ],
-                ),
+              : null,
           pdfw.SizedBox.square(dimension: 4),
           ...lines.map((line) => _ReceiptPDFDocument.Line(line)),
         ],
@@ -163,18 +154,20 @@ class _ReceiptPDFDocument {
               : pdfw.Row(
                   children: [
                     pdfw.SizedBox.square(dimension: 8),
-                    pdfw.Column(
-                      crossAxisAlignment: pdfw.CrossAxisAlignment.center,
-                      children: [
-                        pdfw.Text(
-                          desc,
-                          style: pdfw.TextStyle(
-                            fontWeight: pdfw.FontWeight.bold,
+                    ?cod == null
+                        ? null
+                        : pdfw.Column(
+                            crossAxisAlignment: pdfw.CrossAxisAlignment.center,
+                            children: [
+                              pdfw.Text(
+                                desc,
+                                style: pdfw.TextStyle(
+                                  fontWeight: pdfw.FontWeight.bold,
+                                ),
+                              ),
+                              pdfw.Text("COD $cod"),
+                            ],
                           ),
-                        ),
-                        ?cod != null ? pdfw.Text("COD $cod") : null,
-                      ],
-                    ),
                     pdfw.SizedBox(width: 8),
                     ?type == null
                         ? null
@@ -353,10 +346,10 @@ class _ReceiptPDFDocument {
             mainAxisAlignment: pdfw.MainAxisAlignment.end,
             children: [
               pdfw.Expanded(
-                flex: 1,
+                flex: 3,
                 child: pdfw.Row(
                   mainAxisAlignment: pdfw.MainAxisAlignment.end,
-                  children: [pdfw.Text("")],
+                  children: [pdfw.Text("Artículos")],
                 ),
               ),
               pdfw.Expanded(
@@ -946,7 +939,7 @@ class ReceiptPDFBuilder {
         ),
         _ReceiptPDFDocument.Separator(),
         _ReceiptPDFDocument.ClientInfo(_clientInfoLines),
-        _ReceiptPDFDocument.Separator(),
+        ?_clientInfoLines.isEmpty ? null : _ReceiptPDFDocument.Separator(),
         type == ReceiptType.receipt
             ? _ReceiptPDFDocument.Items(_items)
             : _ReceiptPDFDocument.CommandaItems(_items),
