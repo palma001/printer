@@ -143,7 +143,7 @@ class _ReceiptPDFDocument {
 
   static pdfw.Widget CashierInfo(
     List<_Line> lines, {
-    String? desc = "",
+    String? desc,
     String? type,
     String? cod,
   }) {
@@ -392,7 +392,7 @@ class _ReceiptPDFDocument {
                               : pdfw.Text(
                                   item.observation,
                                   textAlign: pdfw.TextAlign.start,
-                                  overflow: pdfw.TextOverflow.span
+                                  overflow: pdfw.TextOverflow.span,
                                 ),
                         ],
                       ),
@@ -656,9 +656,7 @@ class _ReceiptPDFDocument {
     );
   }
 
-  static pdfw.Widget CommandaTotal({
-    double total = 0,
-  }) {
+  static pdfw.Widget CommandaTotal({double total = 0}) {
     return pdfw.Container(
       margin: pdfw.EdgeInsets.only(top: 16),
       child: pdfw.Column(

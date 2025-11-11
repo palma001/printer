@@ -183,7 +183,8 @@ Future<Uint8List> generatePDFReceipt(
           var subtotal = cantidad * precio;
           return ReceiptPDFBuilder.Item(
             description: prod["name"]?.toString().toUpperCase() ?? "",
-            observation: prod["pivot"]?["observation"]?.toString().toUpperCase() ?? "",
+            observation:
+                prod["pivot"]?["observation"]?.toString().toUpperCase() ?? "",
             units: double.parse("${prod["pivot"]?["amount"] ?? "0.0"}"),
             unitPrice: double.parse("${prod["pivot"]?["price"] ?? "0.0"}"),
             total: subtotal,
