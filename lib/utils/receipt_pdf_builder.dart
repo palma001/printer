@@ -941,9 +941,9 @@ class ReceiptPDFBuilder {
         _ReceiptPDFDocument.Separator(),
         _ReceiptPDFDocument.CashierInfo(
           _cashierInfoLines.$1,
-          desc: _cashierInfoLines.$2 ?? "",
-          type: _cashierInfoLines.$3 ?? "",
-          cod: _cashierInfoLines.$4 ?? "",
+          desc: _cashierInfoLines.$2,
+          type: _cashierInfoLines.$3,
+          cod: _cashierInfoLines.$4,
         ),
         _ReceiptPDFDocument.Separator(),
         _ReceiptPDFDocument.ClientInfo(_clientInfoLines),
