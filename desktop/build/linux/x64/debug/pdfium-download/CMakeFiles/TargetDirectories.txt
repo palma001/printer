@@ -1,3 +1,0 @@
-/home/cruzortiz/Documents/qbitsinc/printer/build/linux/x64/debug/pdfium-download/CMakeFiles/rebuild_cache.dir
-/home/cruzortiz/Documents/qbitsinc/printer/build/linux/x64/debug/pdfium-download/CMakeFiles/edit_cache.dir
-/home/cruzortiz/Documents/qbitsinc/printer/build/linux/x64/debug/pdfium-download/CMakeFiles/pdfium-download.dir
