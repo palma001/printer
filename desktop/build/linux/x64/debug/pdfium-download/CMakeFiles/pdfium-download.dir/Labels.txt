@@ -1,0 +1,14 @@
+# Target labels
+ pdfium-download
+# Source files and their labels
+/home/cruzortiz/Documents/qbitsinc/printer/build/linux/x64/debug/pdfium-download/CMakeFiles/pdfium-download
+/home/cruzortiz/Documents/qbitsinc/printer/build/linux/x64/debug/pdfium-download/CMakeFiles/pdfium-download.rule
+/home/cruzortiz/Documents/qbitsinc/printer/build/linux/x64/debug/pdfium-download/CMakeFiles/pdfium-download-complete.rule
+/home/cruzortiz/Documents/qbitsinc/printer/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-install.rule
+/home/cruzortiz/Documents/qbitsinc/printer/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-mkdir.rule
+/home/cruzortiz/Documents/qbitsinc/printer/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-download.rule
+/home/cruzortiz/Documents/qbitsinc/printer/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-update.rule
+/home/cruzortiz/Documents/qbitsinc/printer/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-patch.rule
+/home/cruzortiz/Documents/qbitsinc/printer/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-configure.rule
+/home/cruzortiz/Documents/qbitsinc/printer/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-build.rule
+/home/cruzortiz/Documents/qbitsinc/printer/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-test.rule
