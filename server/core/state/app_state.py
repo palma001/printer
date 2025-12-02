@@ -9,6 +9,8 @@ from pydantic.dataclasses import dataclass
 from reactivex.subject import BehaviorSubject
 from websockets import ClientConnection
 
+from core.constants.doc import CUIT_FILE
+
 
 class AppStateType(Enum):
     PRINTING = "printing"
@@ -87,6 +89,24 @@ class AppStateObserver:
             if websocket is not None:
                 asyncio.create_task(websocket.send_text(json.dumps(state.dict())))
 
-        return instance._observer.pipe(opx.do_action(write_on_socket)).subscribe(
+        def disconnect_websocket(state: AppState):
+            with open(CUIT_FILE, "r") as configFile:
+                json_cconfig = json.loads(configFile.read())
+                write_on_socket(
+                    AppState(
+                        event=state.event,
+                        cuit=json_cconfig["cuit"],
+                        message=state.message,
+                    )
+                )
+
+        def handle_event(state: AppState):
+            match state.event:
+                case AppStateType.DISCONNECTED | AppStateType.ERROR:
+                    disconnect_websocket(state)
+                case _:
+                    write_on_socket(state)
+
+        return instance._observer.pipe(opx.do_action(handle_event)).subscribe(
             on_next=on_next, on_error=on_error, on_completed=on_completed
         )

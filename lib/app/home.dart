@@ -6,6 +6,7 @@ import "package:flutter/material.dart";
 import "package:qbitsinc_printer_manager/constants/events.dart";
 import "package:qbitsinc_printer_manager/store/app_main_store.dart";
 import "package:qbitsinc_printer_manager/store/error_store.dart";
+import "package:rxdart/rxdart.dart";
 import "package:web_socket_channel/web_socket_channel.dart";
 
 class MyHomePage extends StatefulWidget {
@@ -26,15 +27,17 @@ class _MyHomePageState extends State<MyHomePage> {
     // Read a config.json and find cuit value and print it
     _connectToServer();
     setState(() {
-      _subs = ErrorStore.instance.stream.listen((event) {
-        if (!event.show) {
-          return;
-        }
-        _showAlertDialog(event.title, event.message);
-        AppMainStore.instance.update(
-          AppMainState(status: AppStatus.disconnected),
-        );
-      });
+      _subs = ErrorStore.instance.stream
+          .debounceTime(Duration(milliseconds: 1000))
+          .listen((event) {
+            if (!event.show) {
+              return;
+            }
+            _showAlertDialog(event.title, event.message);
+            AppMainStore.instance.update(
+              AppMainState(status: AppStatus.connected),
+            );
+          });
     });
   }
 
@@ -57,6 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
         (event) {
           try {
             final data = jsonDecode(event);
+            print("Data received: $data");
 
             if (data["event"] == ChannelEventsType.CONNECTED.value) {
               AppMainStore.instance.update(
@@ -67,10 +71,23 @@ class _MyHomePageState extends State<MyHomePage> {
               AppMainStore.instance.update(
                 AppMainState(status: AppStatus.disconnected),
               );
+              setState(() {
+                _cuitController.text = data["cuit"];
+              });
             }
             if (data["event"] == ChannelEventsType.ERROR.value) {
               AppMainStore.instance.update(
                 AppMainState(status: AppStatus.error, message: data["message"]),
+              );
+              setState(() {
+                _cuitController.text = data["cuit"];
+              });
+              ErrorStore.instance.update(
+                SysNotification(
+                  show: true,
+                  message: data["message"],
+                  title: "An error occur",
+                ),
               );
             }
             if (data["event"] == ChannelEventsType.RECEIVING.value) {
@@ -104,6 +121,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   message: data["message"],
                 ),
               );
+              setState(() {
+                _cuitController.text = data["cuit"];
+              });
             }
           } catch (e) {
             print(e);
@@ -142,6 +162,12 @@ class _MyHomePageState extends State<MyHomePage> {
         "payload": {"cuit": _cuitController.text},
       }),
     );
+    AppMainStore.instance.update(
+      AppMainState(
+        status: AppStatus.connecting,
+        message: "Connecting to app...",
+      ),
+    );
   }
 
   Future<void> _showAlertDialog(String title, String content) async {
@@ -166,11 +192,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _disconnect() {
-    AppMainStore.instance.update(AppMainState(status: AppStatus.disconnected));
-    setState(() {
-      _websocketChannel?.sink.close();
-      _websocketChannel = null;
-    });
+    _websocketChannel?.sink.add(
+      jsonEncode({"event": ChannelEventsType.DISCONNECTED.value}),
+    );
   }
 
   @override
@@ -294,7 +318,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                       ),
                                     ],
                                   );
-                                case AppStatus.error:
                                 default:
                                   return Column(
                                     children: [

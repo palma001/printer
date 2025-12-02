@@ -11,13 +11,16 @@ from core.state.app_state import AppStateObserver, AppStateType
 
 async def connect_service(websocket: WebSocket, cuit: str | None) -> None:
     local_cuit = cuit
+    if AppStateObserver.websocket_pusher is not None:
+        AppStateObserver.add(state=AppStateType.CONNECTED)
+        return
     if (
         AppStateType.ERROR != AppStateObserver.observer().value.event
         and AppStateObserver.observer().value.event != AppStateType.DISCONNECTED
     ):
         return
     AppStateObserver.add(AppStateType.CONNECTING, cuit=cuit)
-    if local_cuit is None:
+    if local_cuit is None or len(local_cuit) < 1:
         with open(CUIT_FILE) as configFile:
             json_config = json.load(configFile)
             local_cuit = json_config["cuit"]

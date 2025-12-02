@@ -16,7 +16,7 @@ class ChannelEventsType(Enum):
 
     def __eq__(self, value: object) -> bool:
         if isinstance(value, str):
-            return self.value == value
+            return self.value.lower() == value.lower()
         return super().__eq__(value)
 
 

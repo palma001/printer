@@ -9,6 +9,7 @@ dependencies = [
     "fastapi[standard]>=0.121.2",
     "httpx>=0.28.1",
     "pycups>=2.0.4",
+    "pypdf>=6.4.0",
     "qrcode>=8.2",
     "reactivex>=4.1.0",
     "reportlab>=4.2.2",

@@ -500,6 +500,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pypdf"
+version = "6.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f3/01/f7510cc6124f494cfbec2e8d3c2e1a20d4f6c18622b0c03a3a70e968bacb/pypdf-6.4.0.tar.gz", hash = "sha256:4769d471f8ddc3341193ecc5d6560fa44cf8cd0abfabf21af4e195cc0c224072", size = 5276661, upload-time = "2025-11-23T14:04:43.185Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cd/f2/9c9429411c91ac1dd5cd66780f22b6df20c64c3646cdd1e6d67cf38579c4/pypdf-6.4.0-py3-none-any.whl", hash = "sha256:55ab9837ed97fd7fcc5c131d52fcc2223bc5c6b8a1488bbf7c0e27f1f0023a79", size = 329497, upload-time = "2025-11-23T14:04:41.448Z" },
+]
+
+[[package]]
 name = "python-dotenv"
 version = "1.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -718,6 +727,7 @@ dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "httpx" },
     { name = "pycups" },
+    { name = "pypdf" },
     { name = "qrcode" },
     { name = "reactivex" },
     { name = "reportlab" },
@@ -732,6 +742,7 @@ requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.121.2" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "pycups", specifier = ">=2.0.4" },
+    { name = "pypdf", specifier = ">=6.4.0" },
     { name = "qrcode", specifier = ">=8.2" },
     { name = "reactivex", specifier = ">=4.1.0" },
     { name = "reportlab", specifier = ">=4.2.2" },

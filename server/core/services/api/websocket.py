@@ -42,6 +42,7 @@ async def handle_pusher_message(
             AppStateObserver.add(
                 AppStateType.RECEIVING, message=f"Receiving from {cuit}"
             )
+            print(f">> Pusher event received {event}")
             payload = (
                 json.loads(msg["data"]) if isinstance(msg["data"], str) else msg["data"]
             )

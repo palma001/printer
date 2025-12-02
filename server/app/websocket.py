@@ -21,8 +21,9 @@ async def websocket_endpoint(webSocket: WebSocket):
             AppStateObserver.subscribe()
             data = await webSocket.receive_text()
             data_json: dict = json.loads(data)
+            print(f">> Event received {data_json}")
             match data_json["event"]:
-                case ChannelEventsType.CONNECTED:
+                case ChannelEventsType.CONNECTED | ChannelEventsType.CONNECTING:
                     asyncio.create_task(
                         connect_service(
                             webSocket,
@@ -32,7 +33,6 @@ async def websocket_endpoint(webSocket: WebSocket):
                         )
                     )
                 case ChannelEventsType.DISCONNECTED:
-                    print("Disconnecting")
                     await disconnect_service()
                 case ChannelEventsType.GET_CURRENT_STATUS:
                     await webSocket.send_text(
