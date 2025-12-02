@@ -1,3 +1,5 @@
+import asyncio
+import json
 import webbrowser
 
 from anyio import Path
@@ -8,8 +10,10 @@ from uvicorn import run
 
 from app.home import home_router
 from app.websocket import ws_router
+from core.constants.doc import CUIT_FILE
 from core.constants.env import EnvVariables
-from core.state.app_state import AppStateObserver
+from core.features.connect import connect_service
+from core.state.app_state import AppStateObserver, AppStateType
 
 load_dotenv(Path(__file__).parent / ".env")
 
@@ -17,6 +21,14 @@ load_dotenv(Path(__file__).parent / ".env")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     AppStateObserver()
+    with open(CUIT_FILE, "r") as configFile:
+        try:
+            json_config = json.loads(configFile.read())
+            if json_config["cuit"] is not None and len(json_config["cuit"]) > 0:
+                print(f">> Auto connecting at start {json_config['cuit']}")
+                asyncio.create_task(connect_service(None, json_config["cuit"]))
+        except Exception:
+            AppStateObserver.add(state=AppStateType.DISCONNECTED)
     yield
 
 

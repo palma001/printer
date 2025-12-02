@@ -1,4 +1,5 @@
 import json
+import platform
 
 from fastapi import WebSocket
 
@@ -9,7 +10,7 @@ from core.services.printers import PrintersService
 from core.state.app_state import AppStateObserver, AppStateType
 
 
-async def connect_service(websocket: WebSocket, cuit: str | None) -> None:
+async def connect_service(websocket: WebSocket | None, cuit: str | None) -> None:
     local_cuit = cuit
     if AppStateObserver.websocket_pusher is not None:
         AppStateObserver.add(state=AppStateType.CONNECTED)
@@ -31,6 +32,8 @@ async def connect_service(websocket: WebSocket, cuit: str | None) -> None:
     register_device_to_api(
         cuit=local_cuit,
         printers=printers,
-        deviceId=websocket.client.host if websocket.client is not None else "",
+        deviceId=websocket.client.host
+        if websocket is not None and websocket.client is not None
+        else platform.platform(),
     )
     await connect_to_pusher(printers, local_cuit)
