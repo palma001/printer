@@ -1,7 +1,13 @@
 import asyncio
+import json
 
 from fastapi import WebSocket, WebSocketDisconnect
 from fastapi.routing import APIRouter
+
+from core.features.connect import connect_service
+from core.features.disconnect import disconnect_service
+from core.state.app_state import AppStateObserver
+from core.state.events import ChannelEventsType
 
 ws_router = APIRouter()
 
@@ -11,15 +17,31 @@ async def websocket_endpoint(webSocket: WebSocket):
     await webSocket.accept()
     try:
         while True:
+            AppStateObserver.websocket = webSocket
+            AppStateObserver.subscribe()
             data = await webSocket.receive_text()
-            if data.lower() == "get_printers":
-                await asyncio.sleep(1)  # Simulate async operation
-                printers = ["Printer_A", "Printer_B", "Printer_C"]
-                await webSocket.send_text(f"Available Printers: {printers}")
-            else:
-                await webSocket.send_text(f"Message text was: {data}")
-
+            data_json: dict = json.loads(data)
+            match data_json["event"]:
+                case ChannelEventsType.CONNECTED:
+                    asyncio.create_task(
+                        connect_service(
+                            webSocket,
+                            data_json["payload"]["cuit"]
+                            if data_json["payload"]["cuit"] is not None
+                            else None,
+                        )
+                    )
+                case ChannelEventsType.DISCONNECTED:
+                    print("Disconnecting")
+                    await disconnect_service()
+                case ChannelEventsType.GET_CURRENT_STATUS:
+                    await webSocket.send_text(
+                        json.dumps(AppStateObserver.observer().value.dict())
+                    )
+                case _:
+                    await webSocket.send_text("Unknown event")
     except WebSocketDisconnect:
         print("Client disconnected")
-    except Exception:
-        await webSocket.close()
+        print("Test1")
+    except Exception as e:
+        print(f"Test2 {e}")

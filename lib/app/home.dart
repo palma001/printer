@@ -3,8 +3,7 @@ import "dart:convert";
 import "dart:io";
 
 import "package:flutter/material.dart";
-import "package:path_provider/path_provider.dart";
-import "package:qbitsinc_printer_manager/models/printer.dart";
+import "package:qbitsinc_printer_manager/constants/events.dart";
 import "package:qbitsinc_printer_manager/store/app_main_store.dart";
 import "package:qbitsinc_printer_manager/store/error_store.dart";
 import "package:web_socket_channel/web_socket_channel.dart";
@@ -18,7 +17,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _cuitController = TextEditingController();
-  List<Printer> _printerList = [];
   WebSocketChannel? _websocketChannel;
   late StreamSubscription<SysNotification> _subs;
 
@@ -26,7 +24,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     // Read a config.json and find cuit value and print it
-    _loadConfig();
+    _connectToServer();
     setState(() {
       _subs = ErrorStore.instance.stream.listen((event) {
         if (!event.show) {
@@ -43,85 +41,107 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     _cuitController.dispose();
-    super.dispose();
     _subs.cancel();
+    super.dispose();
   }
 
-  Future<void> _loadConfig() async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final path = "${directory.path}/config.json";
-      final file = File(path);
-
-      if (!await file.exists()) {
-        await file.writeAsString(jsonEncode({}));
-      }
-
-      final String jsonString = await file.readAsString();
-      final Map<String, dynamic> data = json.decode(jsonString);
-      final String? cuit = data["cuit"];
-      print("CUIT from $path: $cuit");
-      if (cuit != null) {
-        _cuitController.text = cuit;
-        _loadPrinters();
-      }
-    } catch (e) {
-      ErrorStore.instance.update(
-        SysNotification(
-          show: true,
-          title: "An error occur",
-          message: "Error handling config.json: $e",
-        ),
-      );
-    }
-  }
-
-  void _saveConfigCUIT() async {
-    if (_cuitController.text.isEmpty) {
-      _showAlertDialog("Validation Error", "CUIT cannot be empty.");
-      return;
-    }
-
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final path = "${directory.path}/config.json";
-      final file = File(path);
-
-      final String jsonString = await file.readAsString();
-      final Map<String, dynamic> data = json.decode(jsonString);
-
-      data["cuit"] = _cuitController.text.trim();
-      data["device_id"] = Platform.localHostname.trim();
-
-      await file.writeAsString(json.encode(data));
-      _loadPrinters();
-      (_cuitController.text, Platform.localHostname, _printerList);
-    } catch (e) {
-      print("Error saving config.json: $e");
-      ErrorStore.instance.update(
-        SysNotification(
-          show: true,
-          title: "Error",
-          message: "An error occurred while saving the CUIT.",
-        ),
-      );
-    }
-  }
-
-  void _loadPrinters() async {
+  void _connectToServer() {
     try {
       final socket = WebSocketChannel.connect(
-        Uri(scheme: "ws", host: "localhost", port: 8000, path: "/ws"),
+        Uri(host: "localhost", port: 8000, scheme: "ws", path: "/ws"),
       );
-      socket.sink.add(json.encode("get_printers"));
-      socket.stream.listen((message) {
-        print("Received message: $message");
+      setState(() {
+        _websocketChannel = socket;
       });
+      socket.stream.listen(
+        (event) {
+          try {
+            final data = jsonDecode(event);
+
+            if (data["event"] == ChannelEventsType.CONNECTED.value) {
+              AppMainStore.instance.update(
+                AppMainState(status: AppStatus.connected),
+              );
+            }
+            if (data["event"] == ChannelEventsType.DISCONNECTED.value) {
+              AppMainStore.instance.update(
+                AppMainState(status: AppStatus.disconnected),
+              );
+            }
+            if (data["event"] == ChannelEventsType.ERROR.value) {
+              AppMainStore.instance.update(
+                AppMainState(status: AppStatus.error, message: data["message"]),
+              );
+            }
+            if (data["event"] == ChannelEventsType.RECEIVING.value) {
+              AppMainStore.instance.update(
+                AppMainState(
+                  status: AppStatus.receiving,
+                  message: data["message"],
+                ),
+              );
+            }
+            if (data["event"] == ChannelEventsType.PRINTING.value) {
+              AppMainStore.instance.update(
+                AppMainState(
+                  status: AppStatus.printing,
+                  message: data["message"],
+                ),
+              );
+            }
+            if (data["event"] == ChannelEventsType.SENDING_PRINTERS.value) {
+              AppMainStore.instance.update(
+                AppMainState(
+                  status: AppStatus.sendingPrinters,
+                  message: data["message"],
+                ),
+              );
+            }
+            if (data["event"] == ChannelEventsType.CONNECTING.value) {
+              AppMainStore.instance.update(
+                AppMainState(
+                  status: AppStatus.connecting,
+                  message: data["message"],
+                ),
+              );
+            }
+          } catch (e) {
+            print(e);
+          }
+        },
+        onError: (_) {
+          socket.sink.close();
+          setState(() {
+            _websocketChannel = null;
+          });
+        },
+        onDone: () {
+          socket.sink.close();
+          setState(() {
+            _websocketChannel = null;
+          });
+        },
+      );
+      socket.sink.add(
+        jsonEncode({"event": ChannelEventsType.GET_CURRENT_STATUS.value}),
+      );
     } catch (e) {
       ErrorStore.instance.update(
         SysNotification(show: true, title: "An error occur", message: "$e"),
       );
     }
+  }
+
+  void _saveConfigCUIT() {
+    if (_websocketChannel == null) {
+      _connectToServer();
+    }
+    _websocketChannel?.sink.add(
+      jsonEncode({
+        "event": ChannelEventsType.CONNECTING.value,
+        "payload": {"cuit": _cuitController.text},
+      }),
+    );
   }
 
   Future<void> _showAlertDialog(String title, String content) async {

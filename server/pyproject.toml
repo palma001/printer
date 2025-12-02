@@ -7,7 +7,12 @@ requires-python = ">=3.13"
 dependencies = [
     "dotenv>=0.9.9",
     "fastapi[standard]>=0.121.2",
-    "pypdf>=6.3.0",
+    "httpx>=0.28.1",
+    "pycups>=2.0.4",
+    "qrcode>=8.2",
+    "reactivex>=4.1.0",
+    "reportlab>=4.2.2",
+    "ruff>=0.14.6",
     "uvicorn>=0.38.0",
     "websockets>=15.0.1",
 ]
