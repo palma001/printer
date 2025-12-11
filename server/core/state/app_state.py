@@ -101,6 +101,7 @@ class AppStateObserver:
                 )
 
         def handle_event(state: AppState):
+            print(f">>> Event: {state}")
             match state.event:
                 case AppStateType.DISCONNECTED | AppStateType.ERROR:
                     disconnect_websocket(state)

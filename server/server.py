@@ -1,5 +1,6 @@
 import asyncio
 import json
+import multiprocessing
 import webbrowser
 
 from anyio import Path
@@ -20,7 +21,7 @@ load_dotenv(Path(__file__).parent / ".env")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    AppStateObserver()
+    AppStateObserver.subscribe(on_error=lambda x: print(f">>>> Error: f{x}"))
     with open(CUIT_FILE, "r") as configFile:
         try:
             json_config = json.loads(configFile.read())
@@ -42,6 +43,7 @@ app.include_router(ws_router)
 def main() -> None:
     if EnvVariables.environment() == "dev":
         webbrowser.open(f"http://{EnvVariables.host()}:{EnvVariables.port()}/docs")
+    multiprocessing.freeze_support()
     run("server:app", host=EnvVariables.host(), port=EnvVariables.port(), reload=True)
 
 

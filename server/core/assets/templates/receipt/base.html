@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    * {
+      margin: 0px;
+      padding: 0px;
+      border: none;
+      box-shadow: none;
+      box-sizing: border-box;
+      font-size: 10px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .header-img {
+      height: 1in;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .flex {
+      display: flex;
+    }
+
+    .row {
+      flex-direction: row;
+      width: 100%;
+    }
+
+    .column {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .space-between {
+      justify-content: space-between;
+    }
+
+    .left {
+      justify-content: flex-start;
+    }
+
+    .right {
+      justify-content: flex-end;
+    }
+
+    .center {
+      justify-content: center;
+    }
+
+    .nowrap {
+      flex-wrap: nowrap;
+    }
+
+    .wrap {
+      flex-wrap: wrap;
+    }
+
+    .align-start {
+      align-items: flex-start;
+    }
+
+    .align-end {
+      align-items: flex-end;
+    }
+
+    .align-center {
+      align-items: center;
+    }
+
+    .separator {
+      width: 100%;
+      height: 1px;
+      background-color: transparent;
+      border-bottom: 1px dashed gray;
+      margin: 5px 0px;
+    }
+
+    .gap-1 {
+      gap: 8px;
+    }
+
+    .gap-1>* {
+      margin: 8px;
+    }
+
+    .gap-2 {
+      gap: 16px;
+    }
+
+    .gap-2>* {
+      margin: 16px;
+    }
+  </style>
+</head>
+
+{% block body%}
+{% endblock %}
+
+</html>

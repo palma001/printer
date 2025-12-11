@@ -2,7 +2,6 @@ import re
 import socket
 from typing import Any
 
-from core.constants.doc import TMP_DIR
 from core.services.printers import PrintersService
 from core.services.ticket import ReceiptType, generate_pdf_receipt
 from core.state.app_state import AppStateObserver, AppStateType
@@ -23,12 +22,8 @@ async def print_ticket(
         AppStateObserver.add(
             AppStateType.PRINTING, message=f"Printing ticket to: {destination}"
         )
-        with open(TMP_DIR / "receipt.pdf", "wb") as f:
-            f.write(content_pdf)
-            PrintersService().sendToPrint(
-                str((TMP_DIR / "receipt.pdf").resolve()), destination
-            )
-            AppStateObserver.add(AppStateType.CONNECTED)
+        PrintersService().sendToPrint(content_pdf, destination)
+        AppStateObserver.add(AppStateType.CONNECTED)
 
     except Exception as e:
         AppStateObserver.add(
@@ -54,7 +49,8 @@ async def print_network_ticket(
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(5)
             s.connect((destination, 9100))
-            s.sendall(receipt_pdf)
+            with open(receipt_pdf, "rb") as file:
+                s.sendall(file.read())
             AppStateObserver.add(AppStateType.CONNECTED)
     except Exception as e:
         AppStateObserver.add(

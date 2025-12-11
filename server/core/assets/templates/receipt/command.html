@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block body %}
+
+<body class="flex column align-start nowrap" style="width: {{printer_size}}mm;">
+  <div class="header flex column">
+    <div class="flex row center">
+      <p>{{ data["company"]["name"] }} NRO DOC.: {{ data["company"]["document_number"] }}</p>
+    </div>
+  </div>
+  <div class="separator"></div>
+  <div class="cashier-info flex column align-start">
+    {% if data["billing"] and data["electronic_invoice"]["fields"]["voucher_type"] %}
+    <p style="text-transform:uppercase;">{{ data["electronic_invoice"]["fields"]["voucher_type"]["Desc"] }}</p>
+    <p>Código {{ data["electronic_invoice"]["fields"]["voucher_type"]["id"] }}</p>
+    {% endif %}
+    <div class="flex row space-between">
+      <p>No. {{ data["code"] }}</p>
+      <p>Vendedor: {{ data["seller"]["name"] }}</p>
+    </div>
+    <div class="flex row left">
+      <p>Cliente: {{ data["client"]["name"] }}</p>
+    </div>
+    <div class="flex row space-between">
+      <p>Fecha: {{ data["date"]}}</p>
+      <p>Hora: {{ data["hour"]}}</p>
+    </div>
+  </div>
+  <div class="separator"></div>
+  <div class="client-info flex column align-start">
+    {% if data["tables"] %}
+    {% for table in data["tables"] %}
+    <p>Mesa: {{ table["name"] }} Sala {{table["living_room"]["name"] }}</p>
+    {% endfor%}
+    {% endif %}
+  </div>
+  <div class="items flex column">
+    <div class="table-rows flex row">
+      <div style="flex-grow: 3;">Artículos</div>
+      <div style="flex-grow: 2;text-align: end;"><strong>Unidades</strong>.</div>
+    </div>
+    <div class="separator"></div>
+    <div class="table-content flex column">
+      {% for prod in data["products"] %}
+      <div style="max-width: 75%;">
+      </div>
+      <div class="flex row align-center">
+        <div style="flex-grow: 3;">
+          <div class="flex column align-start">
+            <p style="word-wrap: break-word;">{{ prod["name"] }}</p>
+            {% if prod["observation"] %}
+            <p style="word-wrap: break-word;">{{ prod["pivot"]["observation"] }}</p>
+            {% endif %}
+          </div>
+        </div>
+        <div style="flex-grow: 1; text-align: end;">{{ "{:0.0f}".format(prod["pivot"]["amount"]|float(0.0)) }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="separator"></div>
+  <div class="footer flex column align-start">
+    {% if data["electronic_invoice"] %}
+    <div class="footer-top flex column align-start">
+      <div class="flex row space-between">
+        <p>I.V.A. Contenido</p>
+        <p>{{ "{:0.2f}".format(data["taxe_total"] |float(0.0)) }}</p>
+      </div>
+      {% if data["billing"] and data["electronic_invoice"]["fields"]["cae"] %}
+      <div class="flex column align-start">
+        <p>CAE No {{ data["electronic_invoice"]["fields"]["cae"] }}</p>
+        <p>Vto: {{data["electronic_invoice"]["fields"]["caef_ch_vto"]}}</p>
+      </div>
+      {% endif %}
+    </div>
+    <div class="footer-bottom flex column align-start">
+      <p style="font-style: italic; font-weight: bold;">Comprobante Autorizado</p>
+      <div class="flex row align-end right nowrap">
+        <div style="max-width: 60%;">
+          <img src={{qr_code}} alt="qr_code"
+            style="aspect-ratio: 1/1;max-height: 100px;width: 100%;object-fit: contain;" />
+        </div>
+        <div style="max-width: 35%;">
+          <img src={{tax_img}} alt="tax_img" style="max-height: 100px;width: 100%;object-fit: contain;" />
+        </div>
+      </div>
+      <p style="font-style: italic; font-weight: bold;font-size: 0.85rem">Esta Administración Federal no se
+        responsabiliza por sus datos
+      </p>
+      <p style="font-style: italic; font-weight: bold;font-size: 0.85rem;">Ingresado en el detalle de la operación</p>
+    </div>
+    {% endif %}
+  </div>
+</body>
+{% endblock %}

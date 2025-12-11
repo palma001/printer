@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block body %}
+
+<body class="flex column align-start nowrap" style="width: {{printer_size}}mm;">
+  <div class="header flex column">
+    <div class="flex colum align-center">
+      {% if data["company"]["url"] %}
+      <div class="header-img">
+        <img src={{ data["company"]["url"] }} alt="Header Image" height="100%" width="auto">
+      </div>
+      {% endif%}
+    </div>
+    <div class="flex column left">
+      <div class="flex row center">
+        <p>{{ data["company"]["name"] }}</p>
+      </div>
+      <p>{{ data["client"]["name"] }}</p>
+      <div class="flex row space-between">
+        <p>I.V.A.: Resp Inscrito</p>
+        <p>C.U.I.T.: {{ data["company"]["document_number"] }}</p>
+      </div>
+    </div>
+    {% if data["billing"] %}
+    <div class="flex column">
+      <div class="flex row space-between">
+        <p>IIBB: {{ data["company"]["document_number"] }}</p>
+        {% if data["electronic_invoice"]["fields"]["activity_start_date"] %}
+        <p>In. Act: {{ data["electronic"]["fields"]["activity_start_date"] }}</p>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+    <div class="flex row left">
+      <p>Dirección: {{ data["company"]["address"] }}</p>
+    </div>
+  </div>
+  <div class="separator"></div>
+  <div class="cashier-info flex column align-start">
+    {% if data["electronic_invoice"]["fields"] %}
+    <div class="flex row">
+      <div>{{ data["electronic_invoice"]["fields"]["voucher_type"]["Desc"] }}</div>
+      <div>COD {{ data["electronic_invoice"]["fields"]["voucher_type"]["id"] }}</div>
+      <div>{{ data["electronic_invoice"]["fields"]["voucher_type"]["Desc"] }}</div>
+    </div>
+    {% endif %}
+    {% if data["billing"] and data["electronic_invoice"]["fields"]["voucher_type"] %}
+    <p style="text-transform:uppercase;">{{ data["electronic_invoice"]["fields"]["voucher_type"]["Desc"] }}</p>
+    <p>Código {{ data["electronic_invoice"]["fields"]["voucher_type"]["id"] }}</p>
+    {% endif %}
+    <div class="flex row space-between">
+      <p>No. {{ data["code"] }}</p>
+      <p>Vendedor: {{ data["seller"]["name"] }}</p>
+    </div>
+    <div class="flex row left">
+      <p>Cliente: {{ data["client"]["name"] }}</p>
+    </div>
+    <div class="flex row space-between">
+      <p>Fecha: {{ data["date"]}}</p>
+      <p>Hora: {{ data["hour"]}}</p>
+    </div>
+  </div>
+  <div class="separator"></div>
+  <div class="client-info flex column align-start">
+    {% if data["billing"] and data["electronic_invoice"]["fields"] %}
+    <p>Concepto: {{ data["electronic_invoice"]["fields"]["concept_type"]["Desc"] }}</p>
+    {% endif %}
+    {% if data["tables"] %}
+    {% for table in data["tables"] %}
+    <p>Mesa: {{ table["name"] }} Sala {{table["living_room"]["name"] }}</p>
+    {% endfor%}
+    {% endif %}
+    <p>Direction: {{ data["company"]["address"] }}</p>
+  </div>
+  <div class="items flex column">
+    <div class="table-rows flex row">
+      <div style="flex-grow: 1;"></div>
+      <div style="flex-grow: 2;"><strong>Unid</strong>.</div>
+      <div style="flex-grow: 2;"><strong>$xUnid.</strong></div>
+      <div style="flex-grow: 2;text-align:end"><strong>$Total</strong></div>
+    </div>
+    <div class="separator"></div>
+    <div class="table-content flex column">
+      {% for prod in data["products"] %}
+      <div style="max-width: 75%;">
+        <p style="word-wrap: break-word;">{{ prod["name"] }}</p>
+      </div>
+      <div class="flex row">
+        <div style="flex-grow: 1;"></div>
+        <div style="flex-grow: 2;">{{ "{:0.0f}".format(prod["pivot"]["amount"]|float(0.0)) }}</div>
+        <div style="flex-grow: 2;text-align: end;">{{ "{:0.2f}".format(prod["pivot"]["price"]|float(0.0)) }}</div>
+        <div style="flex-grow: 2;text-align: end;">{{ "{:0.2f}".format(prod["pivot"]["price"] | float(0.0) *
+          prod["pivot"]["amount"] |
+          float(0.0)) }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="separator"></div>
+  <div class="payments flex column">
+    <div class="row left">
+      <p><strong>Métodos de pago</strong></p>
+      <div class="table-rows flex row">
+        <div style="flex-grow: 3;"><strong>Monto</strong></div>
+        <div style="flex-grow: 2;"><strong>Mon.</strong></div>
+        <div style="flex-grow: 2;"><strong>Desc.(%)</strong></div>
+        <div style="flex-grow: 3;text-align:end"><strong>Monto Desc.</strong></div>
+      </div>
+      <div class="separator"></div>
+      <div class="table-content flex column">
+        {% for payment in data["invoice_payments"] %}
+        <div style="max-width: 75%;">
+          <p style="word-wrap: break-word;">{{ payment["payment_method"]["name"] }}</p>
+        </div>
+        <div class="flex row">
+          <div style="flex-grow: 3;">{{ "{:0.2f}".format(payment["amount"]|float(0.0)) }}</div>
+          <div style="flex-grow: 2;">{{ payment["coin"]["symbol"] }}</div>
+          <div style="flex-grow: 2;">{{ payment["discount_percentage"] }}</div>
+          <div style="flex-grow: 3;text-align: end;">{{ payment["discount_amount"] }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="total flex column align-center gap-1">
+    <div style="font-size: 1.25rem; border:1px solid black; padding: 8px">Imp.Total $ {{ "{:0.2f}".format(data["total"]
+      | float(0.0)) }}</div>
+    <div style="font-size: 1.25rem; border:1px solid black; padding: 8px">Total Sin Desc. $ {{
+      "{:0.2f}".format(data["subtotal"] | float(0.0)) }}</div>
+    <div style="font-size: 1.25rem; border:1px solid black; padding: 8px">Total Desc. $ {{
+      "{:0.2f}".format(data["discount_total"] | float(0.0)) }}</div>
+  </div>
+  <div class="footer flex column align-start">
+    {% if data["electronic_invoice"] %}
+    <div class="footer-top flex column align-start">
+      <div class="flex row space-between">
+        <p>I.V.A. Contenido</p>
+        <p>{{ "{:0.2f}".format(data["taxe_total"] |float(0.0)) }}</p>
+      </div>
+      {% if data["billing"] and data["electronic_invoice"]["fields"]["cae"] %}
+      <div class="flex column align-start">
+        <p>CAE No {{ data["electronic_invoice"]["fields"]["cae"] }}</p>
+        <p>Vto: {{data["electronic_invoice"]["fields"]["caef_ch_vto"]}}</p>
+      </div>
+      {% endif %}
+    </div>
+    <div class="footer-bottom flex column align-start">
+      <p style="font-style: italic; font-weight: bold;">Comprobante Autorizado</p>
+      <div class="flex row align-end right nowrap">
+        <div style="max-width: 60%;">
+          <img src={{qr_code}} alt="qr_code"
+            style="aspect-ratio: 1/1;max-height: 100px;width: 100%;object-fit: contain;" />
+        </div>
+        <div style="max-width: 35%;">
+          <img src={{tax_img}} alt="tax_img" style="max-height: 100px;width: 100%;object-fit: contain;" />
+        </div>
+      </div>
+      <p style="font-style: italic; font-weight: bold;font-size: 0.85rem">Esta Administración Federal no se
+        responsabiliza por sus datos
+      </p>
+      <p style="font-style: italic; font-weight: bold;font-size: 0.85rem;">Ingresado en el detalle de la operación</p>
+    </div>
+    {% endif %}
+  </div>
+</body>
+{% endblock %}

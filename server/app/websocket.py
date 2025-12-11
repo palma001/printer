@@ -18,7 +18,6 @@ async def websocket_endpoint(webSocket: WebSocket):
     try:
         while True:
             AppStateObserver.websocket = webSocket
-            AppStateObserver.subscribe()
             data = await webSocket.receive_text()
             data_json: dict = json.loads(data)
             print(f">> Event received {data_json}")
