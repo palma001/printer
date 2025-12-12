@@ -616,6 +616,11 @@ wheels = [
 ]
 
 [[package]]
+name = "pywin32"
+version = "311"
+source = { registry = "https://pypi.org/simple" }
+
+[[package]]
 name = "pywin32-ctypes"
 version = "0.2.3"
 source = { registry = "https://pypi.org/simple" }
@@ -826,9 +831,10 @@ dependencies = [
     { name = "httpx" },
     { name = "jinja2" },
     { name = "pdfkit" },
-    { name = "pycups" },
+    { name = "pycups", marker = "sys_platform == 'linux'" },
     { name = "pyinstaller" },
     { name = "pypdf" },
+    { name = "pywin32", marker = "sys_platform == 'windows'" },
     { name = "qrcode" },
     { name = "reactivex" },
     { name = "reportlab" },
@@ -844,9 +850,10 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "pdfkit", specifier = ">=1.0.0" },
-    { name = "pycups", specifier = ">=2.0.4" },
+    { name = "pycups", marker = "sys_platform == 'linux'", specifier = ">=2.0.4" },
     { name = "pyinstaller", specifier = ">=6.17.0" },
     { name = "pypdf", specifier = ">=6.4.0" },
+    { name = "pywin32", marker = "sys_platform == 'windows'", specifier = ">=311" },
     { name = "qrcode", specifier = ">=8.2" },
     { name = "reactivex", specifier = ">=4.1.0" },
     { name = "reportlab", specifier = ">=4.2.2" },
