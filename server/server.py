@@ -76,7 +76,7 @@ def main() -> None:
     if EnvVariables.environment() == "dev":
         webbrowser.open(f"http://{EnvVariables.host()}:{EnvVariables.port()}/docs")
     multiprocessing.freeze_support()
-    run("server:app", host=EnvVariables.host(), port=EnvVariables.port(), reload=True)
+    run(app, host=EnvVariables.host(), port=EnvVariables.port(), reload=True)
 
 
 if __name__ == "__main__":
