@@ -1,1 +1,1 @@
-pyinstaller server.spec --clean
+pyinstaller --clean server.spec

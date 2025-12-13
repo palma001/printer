@@ -9,7 +9,7 @@ from pydantic.dataclasses import dataclass
 from reactivex.subject import BehaviorSubject
 from websockets import ClientConnection
 
-from core.constants.doc import CUIT_FILE
+from core.constants import CUIT_FILE
 
 
 class AppStateType(Enum):

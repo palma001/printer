@@ -1,1 +1,1 @@
-pyinstaller --onefile --console main.py
+pyinstaller --clean --onedir --noconfirm server.spec

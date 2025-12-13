@@ -13,7 +13,7 @@ class EnvVariables:
 
     @classmethod
     def environment(cls) -> Literal["dev", "prod"]:
-        env = os.getenv("ENV", "dev")
+        env = os.getenv("ENV", "prod")
         return env if env in ("dev", "prod") else "dev"
 
     @classmethod

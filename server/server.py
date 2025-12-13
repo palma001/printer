@@ -3,6 +3,7 @@ import json
 import multiprocessing
 import re
 import webbrowser
+import sys
 
 from anyio import Path
 from dotenv import load_dotenv
@@ -12,25 +13,32 @@ from uvicorn import run
 
 from app.home import home_router
 from app.websocket import ws_router
-from core.constants.doc import CUIT_FILE
+from core.constants import CUIT_FILE
 from core.constants.env import EnvVariables
 from core.features.connect import connect_service
 from core.state.app_state import AppStateObserver, AppStateType
 
-load_dotenv(Path(__file__).parent / ".env")
+# When bundled by PyInstaller, resources are unpacked to sys._MEIPASS.
+_base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).parent))
+# Load .env from the bundle or source tree
+load_dotenv(_base_path / ".env")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     AppStateObserver.subscribe(on_error=lambda x: print(f">>>> Error: f{x}"))
-    with open(CUIT_FILE, "r") as configFile:
-        try:
-            json_config = json.loads(configFile.read())
-            if json_config["cuit"] is not None and len(json_config["cuit"]) > 0:
-                print(f">> Auto connecting at start {json_config['cuit']}")
-                asyncio.create_task(connect_service(None, json_config["cuit"]))
-        except Exception:
-            AppStateObserver.add(state=AppStateType.DISCONNECTED)
+    try:
+        with open(CUIT_FILE, "r") as configFile:
+                json_config = json.loads(configFile.read())
+                if json_config["cuit"] is not None and len(json_config["cuit"]) > 0:
+                    print(f">> Auto connecting at start {json_config['cuit']}")
+                    asyncio.create_task(connect_service(None, json_config["cuit"]))
+    except FileNotFoundError:
+        with open(CUIT_FILE, "w") as file:
+            json.dump({},file)
+        AppStateObserver.add(state=AppStateType.DISCONNECTED)
+    except Exception:
+        AppStateObserver.add(state=AppStateType.DISCONNECTED)
     yield
 
 
@@ -76,7 +84,13 @@ def main() -> None:
     if EnvVariables.environment() == "dev":
         webbrowser.open(f"http://{EnvVariables.host()}:{EnvVariables.port()}/docs")
     multiprocessing.freeze_support()
-    run(app, host=EnvVariables.host(), port=EnvVariables.port(), reload=True)
+    if getattr(sys, "frozen", False):
+        # Use the app object directly and disable reload for frozen executables
+        run(app, host=EnvVariables.host(), port=EnvVariables.port(), reload=False)
+    else:
+        # In development, keep module-based reload enabled
+        run("server:app", host=EnvVariables.host(), port=EnvVariables.port(), reload=True)
+
 
 
 if __name__ == "__main__":

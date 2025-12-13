@@ -3,7 +3,7 @@ import platform
 
 from fastapi import WebSocket
 
-from core.constants.doc import CUIT_FILE
+from core.constants import CUIT_FILE
 from core.services.api import register_device_to_api
 from core.services.api.websocket import connect_to_pusher
 from core.services.printers import PrintersService
