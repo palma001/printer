@@ -72,15 +72,18 @@ async def handle_pusher_message(
 async def connect_to_pusher(printers: list[dict[str, Any]], cuit: str) -> None:
     """Connects to Pusher WebSocket and listens for messages."""
     url = build_pusher_ws_url()
-    async with websockets.connect(url) as websocket:
-        async for message in websocket:
-            await handle_pusher_message(
-                websocket,
-                message
-                if isinstance(message, str)
-                else message.decode("utf-8")
-                if isinstance(message, bytes) or isinstance(message, bytearray)
-                else "",
-                cuit,
-                printers,
-            )
+    try:
+        async with websockets.connect(url) as websocket:
+            async for message in websocket:
+                await handle_pusher_message(
+                    websocket,
+                    message
+                    if isinstance(message, str)
+                    else message.decode("utf-8")
+                    if isinstance(message, bytes) or isinstance(message, bytearray)
+                    else "",
+                    cuit,
+                    printers,
+                )
+    except Exception as err:
+        AppStateObserver.add(state=AppStateType.ERROR, message=f"Error connecting to pusher {err}")

@@ -3,6 +3,7 @@ from typing import Any
 import httpx
 
 from core.constants.env import EnvVariables
+from core.state.app_state import AppStateObserver, AppStateType
 
 
 def register_device_to_api(
@@ -22,5 +23,6 @@ def register_device_to_api(
         timeout=3,
     )
     if response.status_code >= 400:
-        raise ConnectionError(f"Failed to register device: {response.status_code}")
+        AppStateObserver.add(state=AppStateType.ERROR, message=f"Error sending from {deviceId} and company {cuit} payload {payload}, exited with code {response.status_code}")
+        return {}
     return response.json()
