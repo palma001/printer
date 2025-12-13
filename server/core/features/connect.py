@@ -8,7 +8,6 @@ from core.services.api import register_device_to_api
 from core.services.api.websocket import connect_to_pusher
 from core.services.printers import PrintersService
 from core.state.app_state import AppStateObserver, AppStateType
-from core.constants.env import EnvVariables
 
 
 async def connect_service(websocket: WebSocket | None, cuit: str | None) -> None:
