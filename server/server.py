@@ -4,7 +4,7 @@ import multiprocessing
 import re
 import webbrowser
 import sys
-
+import platform
 from anyio import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -86,6 +86,12 @@ def main() -> None:
     multiprocessing.freeze_support()
     if getattr(sys, "frozen", False):
         # Use the app object directly and disable reload for frozen executables
+        if re.match(
+            pattern="windows",
+            string=platform.system(),
+            flags=re.IGNORECASE            
+        ) is not None:
+            add_to_windows_startup()
         run(app, host=EnvVariables.host(), port=EnvVariables.port(), reload=False)
     else:
         # In development, keep module-based reload enabled
