@@ -8,7 +8,7 @@ class WindowsPrintersService(PrintersServiceActions):
         import win32print
 
         printers = win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL, None, 1)
-        return [name for flag, description, name, comment in printers]
+        return [{"name": name, "identifier": name  } for flag, description, name, comment in printers]
 
     def sendToPrint(self, file_path: str, printer_name: str):
         """print pdf file to printer on windows using win32print"""

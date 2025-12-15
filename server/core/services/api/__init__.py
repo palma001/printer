@@ -14,6 +14,7 @@ def register_device_to_api(
     payload: dict[str, Any] = {
         "cuit": cuit,
         "deviceId": deviceId,
+        # TODO: fix printer model 
         "printers": printers,
     }
     response = httpx.post(
