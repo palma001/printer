@@ -72,6 +72,7 @@ async def handle_pusher_message(
 async def connect_to_pusher(printers: list[dict[str, Any]], cuit: str) -> None:
     """Connects to Pusher WebSocket and listens for messages."""
     url = build_pusher_ws_url()
+    AppStateObserver.add(state=AppStateType.CONNECTING, cuit=cuit, message=f"Connecting to {url}")
     try:
         async with websockets.connect(url) as websocket:
             async for message in websocket:

@@ -20,7 +20,7 @@ async def connect_service(websocket: WebSocket | None, cuit: str | None) -> None
         and AppStateObserver.observer().value.event != AppStateType.DISCONNECTED
     ):
         return
-    AppStateObserver.add(AppStateType.CONNECTING, cuit=cuit)
+    AppStateObserver.add(AppStateType.SENDING_PRINTERS, cuit=cuit)
     if local_cuit is None or len(local_cuit) < 1:
         with open(CUIT_FILE) as configFile:
             json_config = json.load(configFile)
